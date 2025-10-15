@@ -25,7 +25,6 @@ const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
 const EmailManagement = () => import('@/views/admin/EmailManagement.vue')
 const UserManagement = () => import('@/views/admin/UserManagement.vue')
 const CounsellorDirectory = () => import('@/views/CounsellorDirectory.vue')
-const UserManagement = () => import('@/views/admin/UserManagement.vue')
 const ContentManagement = () => import('@/views/admin/ContentManagement.vue')
 const PlatformSettings = () => import('@/views/admin/PlatformSettings.vue')
 

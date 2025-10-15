@@ -1,38 +1,31 @@
 /**
- * MindBridge Cloud Functions
+ * MindBridge Cloud Functions (1st Generation)
  * Serverless functions for user role assignment and email notifications
  */
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const {onDocumentCreated} = require("firebase-functions/v2/firestore");
-
-// The Firebase Admin SDK to access Firestore.
-const {initializeApp} = require("firebase-admin/app");
-const {getFirestore} = require("firebase-admin/firestore");
-const {getAuth} = require("firebase-admin/auth");
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 
 // SendGrid for email notifications
 const sgMail = require("@sendgrid/mail");
 
-initializeApp();
+// Initialize Firebase Admin
+admin.initializeApp();
 
 // Set SendGrid API key
 const apiKey = "SG.cCaOKMCMRLKcRFAGv0FaUA." +
   "KgEJjE7Dhl_70sRkO5lXx0GqZ4tmiPEdQm3xufLltig";
 sgMail.setApiKey(apiKey);
 
-// For cost control, set maximum instances
-setGlobalOptions({maxInstances: 10});
-
 /**
  * Cloud Function: Automatic Role Assignment on User Registration
  * Triggers when a new user document is created in Firestore
  */
-exports.assignUserRole = onDocumentCreated("/users/{userId}",
-    async (event) => {
-      const userData = event.data.data();
-      const userId = event.params.userId;
+exports.assignUserRole = functions.firestore
+    .document("users/{userId}")
+    .onCreate(async (snap, context) => {
+      const userData = snap.data();
+      const userId = context.params.userId;
 
       console.log(`Processing role assignment for user: ${userId}`);
 
@@ -48,7 +41,7 @@ exports.assignUserRole = onDocumentCreated("/users/{userId}",
         }
 
         // Update user document with assigned role
-        await getFirestore()
+        await admin.firestore()
             .collection("users")
             .doc(userId)
             .update({
@@ -59,7 +52,7 @@ exports.assignUserRole = onDocumentCreated("/users/{userId}",
             });
 
         // Set custom claims for role-based access
-        await getAuth().setCustomUserClaims(userId, {
+        await admin.auth().setCustomUserClaims(userId, {
           role: assignedRole,
           isActive: true,
         });
@@ -76,7 +69,7 @@ exports.assignUserRole = onDocumentCreated("/users/{userId}",
         console.error(`Error assigning role to user ${userId}:`, error);
 
         // Update user document with error status
-        await getFirestore()
+        await admin.firestore()
             .collection("users")
             .doc(userId)
             .update({
@@ -111,7 +104,7 @@ async function createCounsellorProfile(userId, userData) {
       updatedAt: new Date(),
     };
 
-    await getFirestore()
+    await admin.firestore()
         .collection("counsellorProfiles")
         .doc(userId)
         .set(counsellorProfile);
@@ -128,19 +121,20 @@ async function createCounsellorProfile(userId, userData) {
  * Cloud Function: Email Notification on Appointment Booking
  * Triggers when a new appointment is created
  */
-exports.sendAppointmentNotification = onDocumentCreated(
-    "/appointments/{appointmentId}", async (event) => {
-      const appointmentData = event.data.data();
-      const appointmentId = event.params.appointmentId;
+exports.sendAppointmentNotification = functions.firestore
+    .document("appointments/{appointmentId}")
+    .onCreate(async (snap, context) => {
+      const appointmentData = snap.data();
+      const appointmentId = context.params.appointmentId;
 
       console.log(`Processing appointment notification: ${appointmentId}`);
 
       try {
         // Get user and counsellor information
         const [userDoc, counsellorDoc] = await Promise.all([
-          getFirestore().collection("users")
+          admin.firestore().collection("users")
               .doc(appointmentData.userId).get(),
-          getFirestore().collection("users")
+          admin.firestore().collection("users")
               .doc(appointmentData.counsellorId).get(),
         ]);
 
@@ -148,7 +142,7 @@ exports.sendAppointmentNotification = onDocumentCreated(
         const counsellorData = counsellorDoc.data();
 
         // Get counsellor profile for additional info
-        const counsellorProfileDoc = await getFirestore()
+        const counsellorProfileDoc = await admin.firestore()
             .collection("counsellorProfiles")
             .doc(appointmentData.counsellorId)
             .get();
@@ -254,6 +248,6 @@ async function sendNewAppointmentNotificationEmail(
 /**
  * Simple test function
  */
-exports.helloWorld = onRequest((request, response) => {
+exports.helloWorld = functions.https.onRequest((_, response) => {
   response.send("Hello from MindBridge Cloud Functions!");
 });
