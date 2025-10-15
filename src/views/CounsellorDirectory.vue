@@ -334,15 +334,137 @@
         </button>
       </div>
     </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal modal-fixed-footer">
+      <div class="modal-content" v-if="selectedCounsellor">
+        <h4>Book Session with {{ selectedCounsellor.name }}</h4>
+
+        <form @submit.prevent="submitBooking">
+          <div class="row">
+            <div class="col s12 m6">
+              <div class="input-field">
+                <input
+                  id="appointment-date"
+                  type="date"
+                  v-model="booking.date"
+                  :min="minDate"
+                  :class="{ invalid: errors.date }"
+                  required
+                >
+                <label for="appointment-date" class="active">Preferred Date</label>
+                <span v-if="errors.date" class="helper-text error-text">
+                  {{ errors.date }}
+                </span>
+              </div>
+            </div>
+
+            <div class="col s12 m6">
+              <div class="input-field">
+                <select
+                  id="appointment-time"
+                  v-model="booking.time"
+                  :class="{ invalid: errors.time }"
+                  required
+                >
+                  <option value="" disabled>Choose time</option>
+                  <option value="09:00">9:00 AM</option>
+                  <option value="10:00">10:00 AM</option>
+                  <option value="11:00">11:00 AM</option>
+                  <option value="14:00">2:00 PM</option>
+                  <option value="15:00">3:00 PM</option>
+                  <option value="16:00">4:00 PM</option>
+                </select>
+                <label for="appointment-time">Preferred Time</label>
+                <span v-if="errors.time" class="helper-text error-text">
+                  {{ errors.time }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col s12 m6">
+              <div class="input-field">
+                <select
+                  id="session-type"
+                  v-model="booking.sessionType"
+                  :class="{ invalid: errors.sessionType }"
+                  required
+                >
+                  <option value="" disabled>Choose session type</option>
+                  <option value="video">Video Call</option>
+                  <option value="audio">Audio Call</option>
+                  <option value="chat">Text Chat</option>
+                </select>
+                <label for="session-type">Session Type</label>
+                <span v-if="errors.sessionType" class="helper-text error-text">
+                  {{ errors.sessionType }}
+                </span>
+              </div>
+            </div>
+
+            <div class="col s12 m6">
+              <div class="input-field">
+                <select id="session-duration" v-model="booking.duration">
+                  <option value="30">30 minutes</option>
+                  <option value="60" selected>60 minutes</option>
+                  <option value="90">90 minutes</option>
+                </select>
+                <label for="session-duration">Duration</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-field">
+            <textarea
+              id="booking-notes"
+              class="materialize-textarea"
+              v-model="booking.notes"
+            ></textarea>
+            <label for="booking-notes">Additional notes (optional)</label>
+          </div>
+
+          <div class="booking-summary card-panel grey lighten-5">
+            <h6>Booking Summary</h6>
+            <p><strong>Counsellor:</strong> {{ selectedCounsellor.name }}</p>
+            <p><strong>Date:</strong> {{ formatBookingDate(booking.date) }}</p>
+            <p><strong>Time:</strong> {{ booking.time }}</p>
+            <p><strong>Duration:</strong> {{ booking.duration }} minutes</p>
+            <p><strong>Session Type:</strong> {{ booking.sessionType }}</p>
+            <p><strong>Cost:</strong> ${{ calculateCost() }}</p>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          @click="submitBooking"
+          class="btn blue waves-effect waves-light"
+          :disabled="submitting"
+        >
+          <i class="material-icons left">event</i>
+          {{ submitting ? 'Booking...' : 'Confirm Booking' }}
+        </button>
+        <button class="modal-close btn-flat waves-effect waves-light">
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import { useAppointments } from '@/composables/useFirestore'
 import { useCounsellorDirectory } from '@/composables/useCounsellorDirectory'
+import { validateRequired } from '@/utils/validation'
 
 const router = useRouter()
+const { user } = useAuth()
+const { createAppointment } = useAppointments()
 
 const {
   loading,
@@ -371,8 +493,30 @@ const {
 
 // Local state
 const selectedCounsellor = ref(null)
+const submitting = ref(false)
+
+// Booking form state
+const booking = reactive({
+  date: '',
+  time: '',
+  sessionType: '',
+  duration: '60',
+  notes: ''
+})
+
+const errors = reactive({
+  date: null,
+  time: null,
+  sessionType: null
+})
 
 // Computed properties
+const minDate = computed(() => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  return tomorrow.toISOString().split('T')[0]
+})
+
 const visiblePages = computed(() => {
   const pages = []
   const start = Math.max(1, currentPage.value - 2)
@@ -414,8 +558,105 @@ const viewProfile = (counsellor) => {
 }
 
 const bookSession = (counsellor) => {
-  // Navigate to booking page with counsellor ID
-  router.push(`/book-appointment?counsellor=${counsellor.id}`)
+  // Check if user is authenticated and is a youth user
+  if (!user.value) {
+    M.toast({ html: 'Please log in to book a session', classes: 'red' })
+    router.push('/login')
+    return
+  }
+
+  if (user.value.role !== 'youth') {
+    M.toast({ html: 'Only youth users can book sessions', classes: 'red' })
+    return
+  }
+
+  selectedCounsellor.value = counsellor
+
+  // Reset booking form
+  booking.date = ''
+  booking.time = ''
+  booking.sessionType = ''
+  booking.duration = '60'
+  booking.notes = ''
+
+  // Clear errors
+  errors.date = null
+  errors.time = null
+  errors.sessionType = null
+
+  // Open booking modal
+  const modal = M.Modal.getInstance(document.getElementById('booking-modal'))
+  modal.open()
+
+  // Reinitialize selects
+  setTimeout(() => {
+    M.FormSelect.init(document.querySelectorAll('#booking-modal select'))
+  }, 100)
+}
+
+const validateBooking = () => {
+  errors.date = validateRequired(booking.date, 'Date')
+  errors.time = validateRequired(booking.time, 'Time')
+  errors.sessionType = validateRequired(booking.sessionType, 'Session Type')
+
+  return !errors.date && !errors.time && !errors.sessionType
+}
+
+const submitBooking = async () => {
+  if (!validateBooking()) {
+    return
+  }
+
+  submitting.value = true
+
+  try {
+    const appointmentData = {
+      userId: user.value.uid,
+      counsellorId: selectedCounsellor.value.id,
+      counsellorName: selectedCounsellor.value.name,
+      appointmentDate: new Date(`${booking.date}T${booking.time}`),
+      sessionType: booking.sessionType,
+      duration: parseInt(booking.duration),
+      notes: booking.notes,
+      status: 'pending',
+      createdAt: new Date()
+    }
+
+    await createAppointment(appointmentData)
+
+    // Close modal
+    const modal = M.Modal.getInstance(document.getElementById('booking-modal'))
+    modal.close()
+
+    M.toast({ html: 'Appointment booked successfully!', classes: 'teal' })
+
+    // Redirect to appointments page
+    setTimeout(() => {
+      router.push('/my-appointments')
+    }, 2000)
+  } catch (err) {
+    console.error('Error booking appointment:', err)
+    M.toast({ html: 'Error booking appointment. Please try again.', classes: 'red' })
+  } finally {
+    submitting.value = false
+  }
+}
+
+const calculateCost = () => {
+  if (!selectedCounsellor.value || !booking.duration) return 0
+  const hourlyRate = selectedCounsellor.value.hourlyRate || 80
+  const hours = parseInt(booking.duration) / 60
+  return Math.round(hourlyRate * hours)
+}
+
+const formatBookingDate = (date) => {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
 // Lifecycle
