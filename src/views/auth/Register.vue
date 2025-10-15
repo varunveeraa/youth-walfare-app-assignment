@@ -196,6 +196,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useEmailService } from '@/composables/useEmailService'
 import { auth, db } from '@/firebase/config'
 import {
   validateEmail,
@@ -208,6 +209,7 @@ import {
 
 const router = useRouter()
 const { register, loading, error: authError, clearError } = useAuth()
+const { sendWelcomeEmail } = useEmailService()
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -276,7 +278,18 @@ const handleRegister = async () => {
       role: form.role
     }
 
-    await register(form.email, form.password, userData)
+    const result = await register(form.email, form.password, userData)
+
+    // Send welcome email after successful registration
+    if (result && result.user) {
+      try {
+        await sendWelcomeEmail(result.user, form.role)
+        console.log('Welcome email sent successfully')
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError)
+        // Don't block registration if email fails
+      }
+    }
 
     // Redirect to dashboard after successful registration
     router.push('/dashboard')

@@ -35,6 +35,19 @@
         <div class="col s12 m6 l4">
           <div class="card hoverable">
             <div class="card-content center-align">
+              <i class="material-icons large red-text">email</i>
+              <span class="card-title">Email Management</span>
+              <p>Test and manage email functionality</p>
+            </div>
+            <div class="card-action center-align">
+              <router-link to="/admin/emails" class="btn red">Manage</router-link>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l4">
+          <div class="card hoverable">
+            <div class="card-content center-align">
               <i class="material-icons large red-text">content_paste</i>
               <span class="card-title">Content Management</span>
               <p>Moderate posts and resources</p>
