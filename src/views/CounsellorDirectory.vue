@@ -614,11 +614,15 @@ const submitBooking = async () => {
       userId: user.value.uid,
       counsellorId: selectedCounsellor.value.id,
       counsellorName: selectedCounsellor.value.name,
+      userName: user.value.displayName,
       appointmentDate: new Date(`${booking.date}T${booking.time}`),
       sessionType: booking.sessionType,
       duration: parseInt(booking.duration),
-      notes: booking.notes,
-      status: 'pending',
+      userNotes: booking.notes,
+      status: 'scheduled',
+      cost: calculateCost(),
+      paymentStatus: 'pending',
+      reminderSent: false,
       createdAt: new Date()
     }
 
