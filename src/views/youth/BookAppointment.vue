@@ -6,6 +6,18 @@
         <div class="col s12">
           <h4>Book a Session</h4>
           <p class="grey-text">Connect with a licensed mental health professional who understands your needs.</p>
+
+          <!-- Pre-selected counsellor notification -->
+          <div v-if="route.query.counsellor" class="card-panel teal lighten-5 teal-text">
+            <i class="material-icons left">info</i>
+            <span v-if="selectedCounsellor">
+              Ready to book with <strong>{{ selectedCounsellor.displayName }}</strong>?
+              Click "Book Session" below or browse other counsellors.
+            </span>
+            <span v-else>
+              Loading your selected counsellor...
+            </span>
+          </div>
         </div>
       </div>
 
@@ -88,6 +100,10 @@
             v-for="counsellor in filteredCounsellors"
             :key="counsellor.id"
             class="card counsellor-card"
+            :class="{
+              'teal lighten-5': route.query.counsellor === counsellor.id,
+              'pulse': route.query.counsellor === counsellor.id
+            }"
           >
             <div class="card-content">
               <div class="row">
@@ -383,11 +399,13 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useCounsellorProfiles, useAppointments } from '@/composables/useFirestore'
 import { validateRequired } from '@/utils/validation'
 import { where, orderBy } from 'firebase/firestore'
 
+const route = useRoute()
 const { user } = useAuth()
 const { getAllProfiles, loading, error } = useCounsellorProfiles()
 const { createAppointment } = useAppointments()
@@ -609,6 +627,22 @@ onMounted(async () => {
   // Add mock data if no counsellors exist
   if (counsellors.value.length === 0) {
     counsellors.value = getMockCounsellors()
+  }
+
+  // Check if a specific counsellor was requested via URL parameter
+  const counsellorId = route.query.counsellor
+  if (counsellorId) {
+    // Find and pre-select the counsellor
+    const preSelectedCounsellor = counsellors.value.find(c => c.id === counsellorId)
+    if (preSelectedCounsellor) {
+      console.log('Pre-selecting counsellor from URL:', preSelectedCounsellor.displayName)
+      // Auto-open booking modal for the selected counsellor
+      setTimeout(() => {
+        selectCounsellor(preSelectedCounsellor)
+      }, 500) // Small delay to ensure everything is loaded
+    } else {
+      console.warn('Counsellor not found with ID:', counsellorId)
+    }
   }
 })
 
