@@ -35,19 +35,6 @@
         <div class="col s12 m6 l3">
           <div class="card hoverable">
             <div class="card-content center-align">
-              <i class="material-icons large teal-text">groups</i>
-              <span class="card-title">Community</span>
-              <p>Connect with peers in a safe space</p>
-            </div>
-            <div class="card-action center-align">
-              <router-link to="/community" class="btn teal">Join</router-link>
-            </div>
-          </div>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card hoverable">
-            <div class="card-content center-align">
               <i class="material-icons large teal-text">event</i>
               <span class="card-title">Book Session</span>
               <p>Schedule with a counsellor</p>
@@ -89,13 +76,6 @@
           <div class="card-panel center-align">
             <h4 class="teal-text">{{ userStats.resourcesViewed }}</h4>
             <p>Resources Viewed</p>
-          </div>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card-panel center-align">
-            <h4 class="teal-text">{{ userStats.communityPosts }}</h4>
-            <p>Community Posts</p>
           </div>
         </div>
 
@@ -151,15 +131,13 @@ const { user } = useAuth()
 const userStats = ref({
   sessionsCompleted: 3,
   resourcesViewed: 12,
-  communityPosts: 5,
   daysActive: 14
 })
 
 const recentActivity = ref([
   { id: 1, icon: 'event', description: 'Completed session with Dr. Smith', time: '2 hours ago' },
   { id: 2, icon: 'library_books', description: 'Read "Managing Anxiety" article', time: '1 day ago' },
-  { id: 3, icon: 'groups', description: 'Posted in Community Forum', time: '2 days ago' },
-  { id: 4, icon: 'star', description: 'Rated counsellor session', time: '3 days ago' }
+  { id: 3, icon: 'star', description: 'Rated counsellor session', time: '3 days ago' }
 ])
 
 const upcomingEvents = ref([

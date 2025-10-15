@@ -83,40 +83,7 @@ export const ResourceSchema = {
   updatedAt: 'timestamp'
 }
 
-// Forum Post document structure
-export const ForumPostSchema = {
-  title: 'string',
-  content: 'string',
-  authorId: 'string',
-  authorName: 'string',
-  category: 'string',
-  tags: 'array',
-  isAnonymous: 'boolean',
-  isModerated: 'boolean',
-  isApproved: 'boolean',
-  isPinned: 'boolean',
-  views: 'number',
-  likes: 'number',
-  commentCount: 'number',
-  lastActivity: 'timestamp',
-  createdAt: 'timestamp',
-  updatedAt: 'timestamp'
-}
 
-// Comment document structure
-export const CommentSchema = {
-  postId: 'string', // Reference to forum post
-  parentCommentId: 'string', // For nested comments (optional)
-  content: 'string',
-  authorId: 'string',
-  authorName: 'string',
-  isAnonymous: 'boolean',
-  isModerated: 'boolean',
-  isApproved: 'boolean',
-  likes: 'number',
-  createdAt: 'timestamp',
-  updatedAt: 'timestamp'
-}
 
 // Appointment document structure
 export const AppointmentSchema = {
@@ -228,21 +195,4 @@ export const getDefaultResource = (authorData) => ({
   updatedAt: new Date()
 })
 
-export const getDefaultForumPost = (authorData) => ({
-  title: '',
-  content: '',
-  authorId: authorData.uid,
-  authorName: authorData.displayName,
-  category: '',
-  tags: [],
-  isAnonymous: false,
-  isModerated: false,
-  isApproved: true, // Auto-approve for now
-  isPinned: false,
-  views: 0,
-  likes: 0,
-  commentCount: 0,
-  lastActivity: new Date(),
-  createdAt: new Date(),
-  updatedAt: new Date()
-})
+

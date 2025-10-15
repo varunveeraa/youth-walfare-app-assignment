@@ -50,24 +50,7 @@
         }
       ]
     },
-    {
-      "collectionGroup": "forumPosts",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "isApproved",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "category",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
+
     {
       "collectionGroup": "appointments",
       "queryScope": "COLLECTION",
@@ -178,34 +161,7 @@
         }
       ]
     },
-    {
-      "collectionGroup": "forumPosts",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "authorId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "comments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "postId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
+
     {
       "collectionGroup": "ratings",
       "queryScope": "COLLECTION",

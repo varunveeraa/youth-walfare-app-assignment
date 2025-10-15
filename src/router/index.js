@@ -11,7 +11,6 @@ const Unauthorized = () => import('@/views/Unauthorized.vue')
 // Youth User Routes
 const YouthDashboard = () => import('@/views/youth/YouthDashboard.vue')
 const Resources = () => import('@/views/youth/Resources.vue')
-const Community = () => import('@/views/youth/Community.vue')
 const BookAppointment = () => import('@/views/youth/BookAppointment.vue')
 const MyAppointments = () => import('@/views/youth/MyAppointments.vue')
 
@@ -68,12 +67,6 @@ const routes = [
     path: '/resources',
     name: 'Resources',
     component: Resources,
-    beforeEnter: requireYouthUser
-  },
-  {
-    path: '/community',
-    name: 'Community',
-    component: Community,
     beforeEnter: requireYouthUser
   },
   {

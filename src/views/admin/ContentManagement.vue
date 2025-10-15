@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col s12">
           <h4>Content Management</h4>
-          <p>Moderate community posts and manage resources.</p>
+          <p>Manage resources and platform content.</p>
         </div>
       </div>
     </div>

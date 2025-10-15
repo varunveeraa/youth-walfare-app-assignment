@@ -19,8 +19,6 @@ import { db } from './config'
 export const COLLECTIONS = {
   USERS: 'users',
   RESOURCES: 'resources',
-  FORUM_POSTS: 'forumPosts',
-  COMMENTS: 'comments',
   APPOINTMENTS: 'appointments',
   RATINGS: 'ratings',
   COUNSELLOR_PROFILES: 'counsellorProfiles',
@@ -30,8 +28,6 @@ export const COLLECTIONS = {
 // Collection references
 export const usersCollection = collection(db, COLLECTIONS.USERS)
 export const resourcesCollection = collection(db, COLLECTIONS.RESOURCES)
-export const forumPostsCollection = collection(db, COLLECTIONS.FORUM_POSTS)
-export const commentsCollection = collection(db, COLLECTIONS.COMMENTS)
 export const appointmentsCollection = collection(db, COLLECTIONS.APPOINTMENTS)
 export const ratingsCollection = collection(db, COLLECTIONS.RATINGS)
 export const counsellorProfilesCollection = collection(db, COLLECTIONS.COUNSELLOR_PROFILES)
@@ -125,12 +121,7 @@ export const getCounsellorProfiles = async () => {
   ])
 }
 
-export const getForumPosts = async (limitCount = 20) => {
-  return getDocuments(forumPostsCollection, [
-    orderBy('createdAt', 'desc'),
-    limit(limitCount)
-  ])
-}
+
 
 export const getUserAppointments = async (userId) => {
   return getDocuments(appointmentsCollection, [

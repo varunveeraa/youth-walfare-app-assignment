@@ -34,21 +34,6 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">
-                  <i class="material-icons left">groups</i>
-                  Community
-                </span>
-                <p>Connect with peers and share your experiences in a safe space.</p>
-              </div>
-              <div class="card-action">
-                <router-link to="/community">Join Community</router-link>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col s12 m6 l4">
-            <div class="card">
-              <div class="card-content">
-                <span class="card-title">
                   <i class="material-icons left">event</i>
                   Book Session
                 </span>
@@ -133,7 +118,7 @@
                   <i class="material-icons left">content_paste</i>
                   Content Management
                 </span>
-                <p>Moderate community posts and manage resources.</p>
+                <p>Manage resources and platform content.</p>
               </div>
               <div class="card-action">
                 <router-link to="/admin/content">Manage Content</router-link>
@@ -165,19 +150,15 @@
             <div class="card-content">
               <span class="card-title">Quick Stats</span>
               <div class="row">
-                <div class="col s12 m3 center-align">
+                <div class="col s12 m4 center-align">
                   <h5 class="teal-text">{{ stats.totalUsers }}</h5>
                   <p>Total Users</p>
                 </div>
-                <div class="col s12 m3 center-align">
+                <div class="col s12 m4 center-align">
                   <h5 class="teal-text">{{ stats.activeSessions }}</h5>
                   <p>Active Sessions</p>
                 </div>
-                <div class="col s12 m3 center-align">
-                  <h5 class="teal-text">{{ stats.communityPosts }}</h5>
-                  <p>Community Posts</p>
-                </div>
-                <div class="col s12 m3 center-align">
+                <div class="col s12 m4 center-align">
                   <h5 class="teal-text">{{ stats.resourcesAvailable }}</h5>
                   <p>Resources Available</p>
                 </div>
@@ -196,13 +177,12 @@ import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
 import DebugUserInfo from '@/components/DebugUserInfo.vue'
 
-const { user, isYouthUser, isCounsellor, isAdmin, userRole } = useAuth()
+const { user, isYouthUser, isCounsellor, isAdmin } = useAuth()
 const router = useRouter()
 
 const stats = ref({
   totalUsers: 1247,
   activeSessions: 23,
-  communityPosts: 156,
   resourcesAvailable: 89
 })
 

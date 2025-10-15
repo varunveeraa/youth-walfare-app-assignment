@@ -9,7 +9,6 @@ import {
   getDocuments,
   usersCollection,
   resourcesCollection,
-  forumPostsCollection,
   appointmentsCollection,
   ratingsCollection,
   counsellorProfilesCollection,
@@ -144,24 +143,7 @@ export const useResources = () => {
   }
 }
 
-export const useForumPosts = () => {
-  const firestore = useFirestore()
 
-  const createPost = (postData) => firestore.create(forumPostsCollection, postData)
-  const updatePost = (postId, postData) => firestore.update(COLLECTIONS.FORUM_POSTS, postId, postData)
-  const getPost = (postId) => firestore.get(COLLECTIONS.FORUM_POSTS, postId)
-  const deletePost = (postId) => firestore.remove(COLLECTIONS.FORUM_POSTS, postId)
-  const getAllPosts = (queryConstraints) => firestore.getAll(forumPostsCollection, queryConstraints)
-
-  return {
-    ...firestore,
-    createPost,
-    updatePost,
-    getPost,
-    deletePost,
-    getAllPosts
-  }
-}
 
 export const useAppointments = () => {
   const firestore = useFirestore()

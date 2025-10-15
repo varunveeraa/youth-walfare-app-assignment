@@ -23,7 +23,6 @@
           <template v-if="isYouthUser">
             <li><router-link to="/youth">Dashboard</router-link></li>
             <li><router-link to="/resources">Resources</router-link></li>
-            <li><router-link to="/community">Community</router-link></li>
             <li><router-link to="/book-appointment">Book Session</router-link></li>
           </template>
           
@@ -99,7 +98,6 @@
       <template v-if="isYouthUser">
         <li><router-link to="/youth">Dashboard</router-link></li>
         <li><router-link to="/resources">Resources</router-link></li>
-        <li><router-link to="/community">Community</router-link></li>
         <li><router-link to="/book-appointment">Book Session</router-link></li>
       </template>
       
