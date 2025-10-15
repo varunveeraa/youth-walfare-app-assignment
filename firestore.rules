@@ -116,9 +116,31 @@ service cloud.firestore {
     match /availability/{availabilityId} {
       // Allow users to read counsellor availability
       allow read: if isAuthenticated();
-      // Allow counsellors to create/update their own availability
-      allow create, update: if isCounsellor() && isOwner(resource.data.counsellorId);
+      // Allow counsellors to create/update/delete their own availability
+      allow create, update, delete: if isCounsellor() &&
+        (isOwner(resource.data.counsellorId) || isOwner(request.resource.data.counsellorId));
       // Allow admins to read/update all availability
+      allow read, update: if isAdmin();
+    }
+
+    // Counsellor settings collection
+    match /counsellorSettings/{counsellorId} {
+      // Allow counsellors to read their own settings
+      allow read: if isAuthenticated() && isOwner(counsellorId);
+      // Allow counsellors to create/update their own settings
+      allow create, update: if isCounsellor() && isOwner(counsellorId);
+      // Allow admins to read/update all settings
+      allow read, update: if isAdmin();
+    }
+
+    // Counsellor breaks collection
+    match /counsellorBreaks/{breakId} {
+      // Allow users to read counsellor breaks (for availability checking)
+      allow read: if isAuthenticated();
+      // Allow counsellors to create/update/delete their own breaks
+      allow create, update, delete: if isCounsellor() &&
+        (isOwner(resource.data.counsellorId) || isOwner(request.resource.data.counsellorId));
+      // Allow admins to read/update all breaks
       allow read, update: if isAdmin();
     }
     
