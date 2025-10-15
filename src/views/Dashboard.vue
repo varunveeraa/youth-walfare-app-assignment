@@ -1,6 +1,9 @@
 <template>
   <div class="dashboard">
     <div class="container">
+      <!-- Debug Component -->
+      <DebugUserInfo />
+
       <div class="row">
         <div class="col s12">
           <h4>Welcome back, {{ user?.displayName }}!</h4>
@@ -191,6 +194,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
+import DebugUserInfo from '@/components/DebugUserInfo.vue'
 
 const { user, isYouthUser, isCounsellor, isAdmin, userRole } = useAuth()
 const router = useRouter()
