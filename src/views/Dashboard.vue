@@ -204,16 +204,27 @@ const stats = ref({
 
 onMounted(() => {
   // Auto-redirect to role-specific dashboard
-  // Comment out the redirection to keep the unified dashboard
-  // Uncomment these lines if you want automatic redirection:
+  console.log('Dashboard mounted, checking user role...')
+  console.log('User:', user.value)
+  console.log('isYouthUser:', isYouthUser.value)
+  console.log('isCounsellor:', isCounsellor.value)
+  console.log('isAdmin:', isAdmin.value)
 
-  // if (isYouthUser.value) {
-  //   router.push('/youth')
-  // } else if (isCounsellor.value) {
-  //   router.push('/counsellor')
-  // } else if (isAdmin.value) {
-  //   router.push('/admin')
-  // }
+  // Wait a moment for auth to load, then redirect
+  setTimeout(() => {
+    if (isYouthUser.value) {
+      console.log('Redirecting youth user to /youth')
+      router.push('/youth')
+    } else if (isCounsellor.value) {
+      console.log('Redirecting counsellor to /counsellor')
+      router.push('/counsellor')
+    } else if (isAdmin.value) {
+      console.log('Redirecting admin to /admin')
+      router.push('/admin')
+    } else {
+      console.log('No role detected, staying on unified dashboard')
+    }
+  }, 500)
 
   // In a real app, you would fetch these stats from your API
   // For now, we're using mock data
