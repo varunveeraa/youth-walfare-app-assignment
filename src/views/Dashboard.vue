@@ -1,8 +1,7 @@
 <template>
   <div class="dashboard">
     <div class="container">
-      <!-- Debug Component -->
-      <DebugUserInfo />
+
 
       <div class="row">
         <div class="col s12">
@@ -175,7 +174,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useRouter } from 'vue-router'
-import DebugUserInfo from '@/components/DebugUserInfo.vue'
+
 
 const { user, isYouthUser, isCounsellor, isAdmin } = useAuth()
 const router = useRouter()
