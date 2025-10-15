@@ -14,6 +14,7 @@
       <!-- Desktop navigation -->
       <ul class="right hide-on-med-and-down">
         <template v-if="!isAuthenticated">
+          <li><router-link to="/counsellors">Find Counsellors</router-link></li>
           <li><router-link to="/login">Login</router-link></li>
           <li><router-link to="/register">Register</router-link></li>
         </template>
@@ -23,6 +24,7 @@
           <template v-if="isYouthUser">
             <li><router-link to="/youth">Dashboard</router-link></li>
             <li><router-link to="/resources">Resources</router-link></li>
+            <li><router-link to="/counsellors">Find Counsellors</router-link></li>
             <li><router-link to="/book-appointment">Book Session</router-link></li>
           </template>
           
@@ -89,6 +91,7 @@
     </li>
     
     <template v-if="!isAuthenticated">
+      <li><router-link to="/counsellors">Find Counsellors</router-link></li>
       <li><router-link to="/login">Login</router-link></li>
       <li><router-link to="/register">Register</router-link></li>
     </template>
@@ -98,6 +101,7 @@
       <template v-if="isYouthUser">
         <li><router-link to="/youth">Dashboard</router-link></li>
         <li><router-link to="/resources">Resources</router-link></li>
+        <li><router-link to="/counsellors">Find Counsellors</router-link></li>
         <li><router-link to="/book-appointment">Book Session</router-link></li>
       </template>
       
