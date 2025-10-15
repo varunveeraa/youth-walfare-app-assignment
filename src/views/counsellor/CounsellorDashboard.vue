@@ -107,47 +107,7 @@
         </div>
       </div>
 
-      <!-- Today's Schedule & Recent Activity -->
-      <div class="row">
-        <div class="col s12 m8">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Today's Schedule</span>
-              <div class="collection">
-                <div class="collection-item" v-for="appointment in todaysSchedule" :key="appointment.id">
-                  <i class="material-icons left">{{ appointment.icon }}</i>
-                  <span><strong>{{ appointment.time }}</strong> - {{ appointment.client }}</span>
-                  <span class="secondary-content">
-                    <span class="chip {{ appointment.statusClass }}">{{ appointment.status }}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="col s12 m4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Recent Reviews</span>
-              <div class="collection">
-                <div class="collection-item" v-for="review in recentReviews" :key="review.id">
-                  <div class="row valign-wrapper">
-                    <div class="col s8">
-                      <span class="truncate">{{ review.comment }}</span>
-                    </div>
-                    <div class="col s4 right-align">
-                      <span class="chip yellow lighten-2">
-                        {{ review.rating }} ⭐
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -165,47 +125,7 @@ const practiceStats = ref({
   hoursAvailable: 32
 })
 
-const todaysSchedule = ref([
-  {
-    id: 1,
-    time: '9:00 AM',
-    client: 'Sarah M.',
-    status: 'Confirmed',
-    statusClass: 'green white-text',
-    icon: 'event'
-  },
-  {
-    id: 2,
-    time: '11:00 AM',
-    client: 'John D.',
-    status: 'Pending',
-    statusClass: 'orange white-text',
-    icon: 'event'
-  },
-  {
-    id: 3,
-    time: '2:00 PM',
-    client: 'Emma L.',
-    status: 'Confirmed',
-    statusClass: 'green white-text',
-    icon: 'event'
-  },
-  {
-    id: 4,
-    time: '4:00 PM',
-    client: 'Available',
-    status: 'Open',
-    statusClass: 'blue white-text',
-    icon: 'event_available'
-  }
-])
 
-const recentReviews = ref([
-  { id: 1, comment: 'Very helpful and understanding...', rating: 5 },
-  { id: 2, comment: 'Great session, felt much better...', rating: 5 },
-  { id: 3, comment: 'Professional and caring...', rating: 4 },
-  { id: 4, comment: 'Excellent communication...', rating: 5 }
-])
 
 onMounted(() => {
   // In a real app, fetch counsellor-specific data
