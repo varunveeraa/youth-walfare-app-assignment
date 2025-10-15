@@ -147,10 +147,22 @@
                 {{ authError }}
               </div>
               
+              <!-- Test Button (for debugging) -->
+              <div class="center-align" style="margin-bottom: 1rem;">
+                <button
+                  @click="testFirebaseConnection"
+                  type="button"
+                  class="btn waves-effect waves-light blue"
+                >
+                  <i class="material-icons left">cloud</i>
+                  Test Firebase Connection
+                </button>
+              </div>
+
               <!-- Submit Button -->
               <div class="center-align">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   class="btn-large waves-effect waves-light teal"
                   :disabled="loading"
                 >
@@ -158,7 +170,7 @@
                     <i class="material-icons left">hourglass_empty</i>
                     Creating Account...
                   </span>
-                  <span v-else">
+                  <span v-else>
                     <i class="material-icons left">person_add</i>
                     Create Account
                   </span>
@@ -184,13 +196,14 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { 
-  validateEmail, 
-  validatePassword, 
-  validateConfirmPassword, 
-  validateName, 
+import { auth, db } from '@/firebase/config'
+import {
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validateName,
   validateAge,
-  validateRequired 
+  validateRequired
 } from '@/utils/validation'
 
 const router = useRouter()
@@ -231,22 +244,40 @@ const validateForm = () => {
   return !Object.values(errors).some(error => error !== null)
 }
 
+const testFirebaseConnection = async () => {
+  try {
+    console.log('Testing Firebase connection...')
+
+    // Test Firebase Auth
+    console.log('Firebase Auth instance:', auth)
+    console.log('Firebase Auth current user:', auth.currentUser)
+
+    // Test Firestore
+    console.log('Firestore instance:', db)
+
+    alert('Firebase connection test completed. Check console for details.')
+  } catch (error) {
+    console.error('Firebase connection test failed:', error)
+    alert('Firebase connection test failed. Check console for details.')
+  }
+}
+
 const handleRegister = async () => {
   clearError()
-  
+
   if (!validateForm()) {
     return
   }
-  
+
   try {
     const userData = {
       displayName: form.displayName,
       age: parseInt(form.age),
       role: form.role
     }
-    
+
     await register(form.email, form.password, userData)
-    
+
     // Redirect to dashboard after successful registration
     router.push('/dashboard')
   } catch (error) {

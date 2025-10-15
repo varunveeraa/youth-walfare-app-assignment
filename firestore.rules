@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isYouthUser() {
+      return hasRole('youth');
+    }
+    
+    function isCounsellor() {
+      return hasRole('counsellor');
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Allow users to read and write their own document
+      allow read, write: if isOwner(userId);
+      // Allow user creation during registration (when document doesn't exist)
+      allow create: if isAuthenticated() && isOwner(userId);
+      // Allow admins to read all user documents
+      allow read: if isAdmin();
+      // Allow counsellors to read youth user documents (for appointments)
+      allow read: if isCounsellor() && resource.data.role == 'youth';
+      // Allow youth users to read counsellor documents (for booking)
+      allow read: if isYouthUser() && resource.data.role == 'counsellor';
+    }
+    
+    // Resources collection
+    match /resources/{resourceId} {
+      // Allow all authenticated users to read published resources
+      allow read: if isAuthenticated() && resource.data.isPublished == true;
+      // Allow admins and counsellors to create/update resources
+      allow create, update: if isAdmin() || isCounsellor();
+      // Allow admins to delete resources
+      allow delete: if isAdmin();
+    }
+    
+    // Forum posts collection
+    match /forumPosts/{postId} {
+      // Allow all authenticated users to read approved posts
+      allow read: if isAuthenticated() && resource.data.isApproved == true;
+      // Allow users to create posts
+      allow create: if isAuthenticated();
+      // Allow users to update their own posts
+      allow update: if isAuthenticated() && isOwner(resource.data.authorId);
+      // Allow admins to update/delete any post
+      allow update, delete: if isAdmin();
+    }
+    
+    // Comments collection
+    match /comments/{commentId} {
+      // Allow all authenticated users to read approved comments
+      allow read: if isAuthenticated() && resource.data.isApproved == true;
+      // Allow users to create comments
+      allow create: if isAuthenticated();
+      // Allow users to update their own comments
+      allow update: if isAuthenticated() && isOwner(resource.data.authorId);
+      // Allow admins to update/delete any comment
+      allow update, delete: if isAdmin();
+    }
+    
+    // Appointments collection
+    match /appointments/{appointmentId} {
+      // Allow users to read their own appointments
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.userId) || isOwner(resource.data.counsellorId));
+      // Allow youth users to create appointments
+      allow create: if isYouthUser();
+      // Allow users to update their own appointments
+      allow update: if isAuthenticated() && 
+                       (isOwner(resource.data.userId) || isOwner(resource.data.counsellorId));
+      // Allow admins to read/update all appointments
+      allow read, update: if isAdmin();
+    }
+    
+    // Ratings collection
+    match /ratings/{ratingId} {
+      // Allow users to read ratings for counsellors
+      allow read: if isAuthenticated();
+      // Allow youth users to create ratings for their appointments
+      allow create: if isYouthUser() && isOwner(request.resource.data.userId);
+      // Allow users to update their own ratings
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      // Allow admins to read/update all ratings
+      allow read, update: if isAdmin();
+    }
+    
+    // Counsellor profiles collection
+    match /counsellorProfiles/{profileId} {
+      // Allow all authenticated users to read active profiles
+      allow read: if isAuthenticated() && resource.data.isActive == true;
+      // Allow counsellors to create/update their own profile
+      allow create, update: if isCounsellor() && isOwner(resource.data.userId);
+      // Allow admins to read/update all profiles
+      allow read, update: if isAdmin();
+    }
+    
+    // Availability collection
+    match /availability/{availabilityId} {
+      // Allow users to read counsellor availability
+      allow read: if isAuthenticated();
+      // Allow counsellors to create/update their own availability
+      allow create, update: if isCounsellor() && isOwner(resource.data.counsellorId);
+      // Allow admins to read/update all availability
+      allow read, update: if isAdmin();
+    }
+    
+    // Default deny rule for any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -43,6 +43,13 @@
             <li><router-link to="/admin/content">Content</router-link></li>
           </template>
           
+          <!-- Direct logout button (for testing) -->
+          <li>
+            <a href="#" @click="handleLogout" class="red-text">
+              <i class="material-icons left">logout</i>Logout
+            </a>
+          </li>
+
           <!-- User dropdown -->
           <li>
             <a class="dropdown-trigger" href="#!" data-target="user-dropdown">
@@ -55,10 +62,12 @@
       </ul>
       
       <!-- User dropdown content -->
-      <ul id="user-dropdown" class="dropdown-content" v-if="isAuthenticated">
-        <li><a href="#" @click="handleLogout">
-          <i class="material-icons left">logout</i>Logout
-        </a></li>
+      <ul id="user-dropdown" class="dropdown-content">
+        <li v-if="isAuthenticated">
+          <a href="#" @click="handleLogout">
+            <i class="material-icons left">logout</i>Logout
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -124,21 +133,43 @@ import { onMounted } from 'vue'
 const { user, isAuthenticated, isYouthUser, isCounsellor, isAdmin, logout } = useAuth()
 const router = useRouter()
 
-const handleLogout = async () => {
+const handleLogout = async (event) => {
+  event.preventDefault()
+
+  console.log('Logout button clicked')
+
   try {
+    console.log('Calling logout function...')
     await logout()
+    console.log('Logout completed, redirecting to home...')
     router.push('/')
   } catch (error) {
     console.error('Logout error:', error)
+    alert('Error logging out: ' + error.message)
   }
 }
 
 onMounted(() => {
-  // Initialize Materialize components
-  if (typeof M !== 'undefined') {
-    M.Sidenav.init(document.querySelectorAll('.sidenav'))
-    M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'))
-  }
+  // Initialize Materialize components with a slight delay to ensure DOM is ready
+  setTimeout(() => {
+    if (typeof M !== 'undefined') {
+      console.log('Initializing Materialize components...')
+
+      // Initialize sidenav
+      const sidenavElems = document.querySelectorAll('.sidenav')
+      M.Sidenav.init(sidenavElems)
+
+      // Initialize dropdown
+      const dropdownElems = document.querySelectorAll('.dropdown-trigger')
+      M.Dropdown.init(dropdownElems, {
+        constrainWidth: false,
+        coverTrigger: false,
+        closeOnClick: true
+      })
+
+      console.log('Materialize components initialized')
+    }
+  }, 100)
 })
 </script>
 
