@@ -89,46 +89,10 @@
           </div>
         </div>
 
-        <div class="col s12 m6 l3">
-          <div class="card-panel center-align">
-            <h4 class="red-text">{{ platformStats.communityPosts }}</h4>
-            <p>Community Posts</p>
-            <small class="purple-text">{{ platformStats.flaggedPosts }} flagged</small>
-          </div>
-        </div>
+
       </div>
 
-      <!-- Recent Activity & Alerts -->
-      <div class="row">
-        <div class="col s12 m8">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Recent Platform Activity</span>
-              <div class="collection">
-                <div class="collection-item" v-for="activity in recentActivity" :key="activity.id">
-                  <i class="material-icons left" :class="activity.iconClass">{{ activity.icon }}</i>
-                  <span>{{ activity.description }}</span>
-                  <span class="secondary-content grey-text">{{ activity.time }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="col s12 m4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">System Alerts</span>
-              <div class="collection">
-                <div class="collection-item" v-for="alert in systemAlerts" :key="alert.id">
-                  <span class="chip {{ alert.severityClass }}">{{ alert.severity }}</span>
-                  <p style="margin-top: 0.5rem;">{{ alert.message }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Quick Actions -->
       <div class="row">
@@ -182,62 +146,10 @@ const platformStats = ref({
   activeCounsellors: 45,
   onlineCounsellors: 12,
   sessionsToday: 89,
-  pendingReports: 3,
-  communityPosts: 156,
-  flaggedPosts: 2
+  pendingReports: 3
 })
 
-const recentActivity = ref([
-  {
-    id: 1,
-    icon: 'person_add',
-    iconClass: 'green-text',
-    description: 'New counsellor registered: Dr. Sarah Johnson',
-    time: '5 min ago'
-  },
-  {
-    id: 2,
-    icon: 'flag',
-    iconClass: 'orange-text',
-    description: 'Community post flagged for review',
-    time: '15 min ago'
-  },
-  {
-    id: 3,
-    icon: 'verified_user',
-    iconClass: 'blue-text',
-    description: 'Counsellor verification completed: Dr. Mike Chen',
-    time: '1 hour ago'
-  },
-  {
-    id: 4,
-    icon: 'report',
-    iconClass: 'red-text',
-    description: 'User report submitted - requires review',
-    time: '2 hours ago'
-  }
-])
 
-const systemAlerts = ref([
-  {
-    id: 1,
-    severity: 'HIGH',
-    severityClass: 'red white-text',
-    message: '2 posts require immediate moderation'
-  },
-  {
-    id: 2,
-    severity: 'MEDIUM',
-    severityClass: 'orange white-text',
-    message: 'Server load at 85% capacity'
-  },
-  {
-    id: 3,
-    severity: 'LOW',
-    severityClass: 'blue white-text',
-    message: 'Weekly backup scheduled for tonight'
-  }
-])
 
 onMounted(() => {
   // In a real app, fetch admin-specific data and alerts

@@ -87,37 +87,7 @@
         </div>
       </div>
 
-      <!-- Recent Activity -->
-      <div class="row">
-        <div class="col s12 m8">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Recent Activity</span>
-              <div class="collection">
-                <div class="collection-item" v-for="activity in recentActivity" :key="activity.id">
-                  <i class="material-icons left">{{ activity.icon }}</i>
-                  <span>{{ activity.description }}</span>
-                  <span class="secondary-content grey-text">{{ activity.time }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="col s12 m4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Upcoming</span>
-              <div class="collection">
-                <div class="collection-item" v-for="upcoming in upcomingEvents" :key="upcoming.id">
-                  <span>{{ upcoming.title }}</span>
-                  <span class="secondary-content grey-text">{{ upcoming.date }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -134,17 +104,7 @@ const userStats = ref({
   daysActive: 14
 })
 
-const recentActivity = ref([
-  { id: 1, icon: 'event', description: 'Completed session with Dr. Smith', time: '2 hours ago' },
-  { id: 2, icon: 'library_books', description: 'Read "Managing Anxiety" article', time: '1 day ago' },
-  { id: 3, icon: 'star', description: 'Rated counsellor session', time: '3 days ago' }
-])
 
-const upcomingEvents = ref([
-  { id: 1, title: 'Session with Dr. Johnson', date: 'Tomorrow 2PM' },
-  { id: 2, title: 'Group Therapy', date: 'Friday 10AM' },
-  { id: 3, title: 'Mindfulness Workshop', date: 'Next Week' }
-])
 
 onMounted(() => {
   // In a real app, fetch user-specific data
