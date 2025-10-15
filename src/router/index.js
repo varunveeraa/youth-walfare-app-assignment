@@ -88,6 +88,12 @@ const routes = [
     component: MyAppointments,
     beforeEnter: requireYouthUser
   },
+  {
+    path: '/rate-counsellor/:appointmentId',
+    name: 'RateCounsellor',
+    component: () => import('@/views/youth/RateCounsellor.vue'),
+    beforeEnter: requireYouthUser
+  },
   
   // Counsellor Routes
   {
@@ -112,6 +118,12 @@ const routes = [
     path: '/counsellor/availability',
     name: 'CounsellorAvailability',
     component: CounsellorAvailability,
+    beforeEnter: requireCounsellor
+  },
+  {
+    path: '/counsellor/ratings',
+    name: 'CounsellorRatings',
+    component: () => import('@/views/counsellor/CounsellorRatings.vue'),
     beforeEnter: requireCounsellor
   },
   

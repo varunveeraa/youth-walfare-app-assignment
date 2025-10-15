@@ -33,6 +33,7 @@
             <li><router-link to="/counsellor/profile">Profile</router-link></li>
             <li><router-link to="/counsellor/appointments">Appointments</router-link></li>
             <li><router-link to="/counsellor/availability">Availability</router-link></li>
+            <li><router-link to="/counsellor/ratings">Ratings</router-link></li>
           </template>
           
           <!-- Admin Navigation -->
@@ -97,6 +98,8 @@
         <li><router-link to="/counsellor">Dashboard</router-link></li>
         <li><router-link to="/counsellor/profile">Profile</router-link></li>
         <li><router-link to="/counsellor/appointments">Appointments</router-link></li>
+        <li><router-link to="/counsellor/availability">Availability</router-link></li>
+        <li><router-link to="/counsellor/ratings">Ratings</router-link></li>
       </template>
       
       <template v-if="isAdmin">
