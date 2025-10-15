@@ -135,8 +135,8 @@
                         class="circle responsive-img client-avatar"
                       >
                       <div class="client-details">
-                        <h6 class="client-name">{{ appointment.userName || 'Client' }}</h6>
-                        <p class="grey-text">{{ appointment.userEmail || 'No email' }}</p>
+                        <h6 class="client-name">{{ getClientName(appointment) }}</h6>
+                        <p class="grey-text">{{ appointment.userEmail || 'No email provided' }}</p>
                       </div>
                     </div>
                   </div>
@@ -292,9 +292,23 @@ const setActiveTab = (tab) => {
   activeTab.value = tab
 }
 
+const getClientName = (appointment) => {
+  if (!appointment.userName) return 'Anonymous Client'
+
+  // Handle case where userName might be duplicated or have issues
+  const name = appointment.userName.trim()
+  return name || appointment.userEmail?.split('@')[0] || 'Client'
+}
+
 const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('en-US', {
+  if (!date) return 'No date'
+
+  // Handle Firestore timestamp
+  const dateObj = date.toDate ? date.toDate() : new Date(date)
+
+  if (isNaN(dateObj.getTime())) return 'Invalid date'
+
+  return dateObj.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -303,8 +317,14 @@ const formatDate = (date) => {
 }
 
 const formatTime = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleTimeString('en-US', {
+  if (!date) return 'No time'
+
+  // Handle Firestore timestamp
+  const dateObj = date.toDate ? date.toDate() : new Date(date)
+
+  if (isNaN(dateObj.getTime())) return 'Invalid time'
+
+  return dateObj.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit'
   })
