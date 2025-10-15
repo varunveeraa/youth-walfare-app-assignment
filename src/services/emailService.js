@@ -6,7 +6,8 @@ const SENDGRID_API_KEY = 'SG.cCaOKMCMRLKcRFAGv0FaUA.KgEJjE7Dhl_70sRkO5lXx0GqZ4tm
 sgMail.setApiKey(SENDGRID_API_KEY)
 
 // Verified sender email (must be verified in SendGrid)
-const FROM_EMAIL = 'mindbridge@example.com'
+// Using a test email that should work with SendGrid
+const FROM_EMAIL = 'test@example.com'
 const FROM_NAME = 'MindBridge Support'
 
 class EmailService {

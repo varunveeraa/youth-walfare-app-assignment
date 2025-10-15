@@ -64,6 +64,14 @@ exports.assignUserRole = functions.firestore
           await createCounsellorProfile(userId, userData);
         }
 
+        // Send welcome email
+        await sendWelcomeEmail(
+            userData.email,
+            userData.displayName,
+            assignedRole,
+        );
+        console.log(`Welcome email sent to user ${userId}`);
+
         return {success: true, role: assignedRole};
       } catch (error) {
         console.error(`Error assigning role to user ${userId}:`, error);
@@ -114,6 +122,66 @@ async function createCounsellorProfile(userId, userData) {
     const msg = `Error creating counsellor profile for user ${userId}:`;
     console.error(msg, error);
     throw error;
+  }
+}
+
+/**
+ * Helper function to send welcome email to new users
+ * @param {string} userEmail - The user's email address
+ * @param {string} userName - The user's display name
+ * @param {string} userRole - The user's assigned role
+ * @return {Promise} Promise that resolves when email is sent
+ */
+async function sendWelcomeEmail(userEmail, userName, userRole) {
+  try {
+    const roleSpecificContent = {
+      youth: "As a youth user, you can access mental health resources, " +
+        "book counselling sessions, and connect with professional support.",
+      counsellor: "As a counsellor, you can manage your profile, " +
+        "set availability, and help young people on their journey.",
+      admin: "As an admin, you have access to platform management tools " +
+        "and user oversight capabilities.",
+    };
+
+    const msg = {
+      to: userEmail,
+      from: {
+        email: "test@example.com",
+        name: "MindBridge Support",
+      },
+      subject: "Welcome to MindBridge - Your Mental Health Journey Starts Here",
+      text: `Welcome to MindBridge, ${userName || "there"}!
+
+Thank you for joining our mental health support platform.
+
+${roleSpecificContent[userRole] || "Welcome to our platform!"}
+
+Getting Started:
+- Complete your profile
+- Explore our mental health resources
+- Connect with our supportive community
+
+Best regards,
+The MindBridge Team`,
+      html: `<h1>Welcome to MindBridge!</h1>
+<p>Hello ${userName || "there"},</p>
+<p>Thank you for joining our mental health support platform.</p>
+<p>${roleSpecificContent[userRole] || "Welcome to our platform!"}</p>
+<h3>Getting Started:</h3>
+<ul>
+  <li>Complete your profile</li>
+  <li>Explore our mental health resources</li>
+  <li>Connect with our supportive community</li>
+</ul>
+<p>Best regards,<br>The MindBridge Team</p>`,
+    };
+
+    await sgMail.send(msg);
+    console.log(`Welcome email sent successfully to: ${userEmail}`);
+    return {success: true, message: "Welcome email sent"};
+  } catch (error) {
+    console.error(`Error sending welcome email to ${userEmail}:`, error);
+    return {success: false, message: error.message};
   }
 }
 

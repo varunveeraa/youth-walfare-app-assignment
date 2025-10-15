@@ -196,7 +196,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { useEmailService } from '@/composables/useEmailService'
+// Email service removed - emails now sent via Cloud Functions
 import { auth, db } from '@/firebase/config'
 import {
   validateEmail,
@@ -209,7 +209,7 @@ import {
 
 const router = useRouter()
 const { register, loading, error: authError, clearError } = useAuth()
-const { sendWelcomeEmail } = useEmailService()
+// Welcome emails now sent automatically via Cloud Functions
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -280,15 +280,9 @@ const handleRegister = async () => {
 
     const result = await register(form.email, form.password, userData)
 
-    // Send welcome email after successful registration
+    // Welcome email will be sent automatically via Cloud Functions
     if (result && result.user) {
-      try {
-        await sendWelcomeEmail(result.user, form.role)
-        console.log('Welcome email sent successfully')
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError)
-        // Don't block registration if email fails
-      }
+      console.log('User registered successfully - welcome email will be sent automatically')
     }
 
     // Redirect to dashboard after successful registration
