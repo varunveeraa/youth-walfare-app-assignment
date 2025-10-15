@@ -64,13 +64,19 @@ exports.assignUserRole = functions.firestore
           await createCounsellorProfile(userId, userData);
         }
 
-        // Send welcome email
-        await sendWelcomeEmail(
-            userData.email,
-            userData.displayName,
-            assignedRole,
-        );
-        console.log(`Welcome email sent to user ${userId}`);
+        // Send welcome email (don't fail if email fails)
+        try {
+          await sendWelcomeEmail(
+              userData.email,
+              userData.displayName,
+              assignedRole,
+          );
+          console.log(`Welcome email sent to user ${userId}`);
+        } catch (emailError) {
+          console.error(`Failed to send welcome email to ${userId}:`,
+              emailError);
+          // Don't fail the entire function if email fails
+        }
 
         return {success: true, role: assignedRole};
       } catch (error) {
@@ -146,7 +152,7 @@ async function sendWelcomeEmail(userEmail, userName, userRole) {
     const msg = {
       to: userEmail,
       from: {
-        email: "test@example.com",
+        email: "noreply@mindbridge.app",
         name: "MindBridge Support",
       },
       subject: "Welcome to MindBridge - Your Mental Health Journey Starts Here",
