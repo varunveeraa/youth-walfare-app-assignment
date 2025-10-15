@@ -2,30 +2,12 @@
   <footer class="page-footer teal darken-2">
     <div class="container">
       <div class="row">
-        <div class="col l6 s12">
+        <div class="col s12 center-align">
           <h5 class="white-text">MindBridge</h5>
           <p class="grey-text text-lighten-4">
             Connecting young people with mental health support and community.
             Your wellbeing is our priority.
           </p>
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Quick Links</h5>
-          <ul>
-            <li><router-link class="grey-text text-lighten-3" to="/resources">Resources</router-link></li>
-            <li><router-link class="grey-text text-lighten-3" to="/community">Community</router-link></li>
-            <li><a class="grey-text text-lighten-3" href="#crisis">Crisis Support</a></li>
-            <li><a class="grey-text text-lighten-3" href="#about">About Us</a></li>
-          </ul>
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Support</h5>
-          <ul>
-            <li><a class="grey-text text-lighten-3" href="#help">Help Center</a></li>
-            <li><a class="grey-text text-lighten-3" href="#contact">Contact Us</a></li>
-            <li><a class="grey-text text-lighten-3" href="#privacy">Privacy Policy</a></li>
-            <li><a class="grey-text text-lighten-3" href="#terms">Terms of Service</a></li>
-          </ul>
         </div>
       </div>
     </div>
