@@ -133,10 +133,10 @@
             <div class="card-image">
               <img 
                 :src="counsellor.profileImage || '/api/placeholder/300/200'" 
-                :alt="counsellor.name"
+                :alt="counsellor.displayName"
                 class="counsellor-image"
               >
-              <span class="card-title">{{ counsellor.name }}</span>
+              <span class="card-title">{{ counsellor.displayName }}</span>
               <div class="availability-badge">
                 <span class="chip green lighten-4 green-text">
                   <i class="material-icons left tiny">schedule</i>
@@ -175,19 +175,19 @@
 
               <!-- Specialties -->
               <div class="specialties">
-                <span 
-                  v-for="specialty in counsellor.specialties?.slice(0, 3)" 
+                <span
+                  v-for="specialty in counsellor.specializations?.slice(0, 3)"
                   :key="specialty"
                   class="chip tiny"
                   :class="`${getSpecialtyColor(specialty)} lighten-4 ${getSpecialtyColor(specialty)}-text`"
                 >
                   {{ specialty }}
                 </span>
-                <span 
-                  v-if="counsellor.specialties?.length > 3" 
+                <span
+                  v-if="counsellor.specializations?.length > 3"
                   class="chip tiny grey lighten-4 grey-text"
                 >
-                  +{{ counsellor.specialties.length - 3 }} more
+                  +{{ counsellor.specializations.length - 3 }} more
                 </span>
               </div>
 
@@ -272,13 +272,13 @@
     <div id="counsellor-profile-modal" class="modal modal-fixed-footer">
       <div class="modal-content">
         <div v-if="selectedCounsellor">
-          <h4>{{ selectedCounsellor.name }}</h4>
+          <h4>{{ selectedCounsellor.displayName }}</h4>
           
           <div class="row">
             <div class="col s12 m4">
               <img 
                 :src="selectedCounsellor.profileImage || '/api/placeholder/200/200'" 
-                :alt="selectedCounsellor.name"
+                :alt="selectedCounsellor.displayName"
                 class="responsive-img circle"
               >
             </div>
@@ -310,8 +310,8 @@
 
           <h5>Specialties</h5>
           <div class="specialties">
-            <span 
-              v-for="specialty in selectedCounsellor.specialties" 
+            <span
+              v-for="specialty in selectedCounsellor.specializations"
               :key="specialty"
               class="chip"
               :class="`${getSpecialtyColor(specialty)} lighten-4 ${getSpecialtyColor(specialty)}-text`"
@@ -338,7 +338,7 @@
     <!-- Booking Modal -->
     <div id="booking-modal" class="modal modal-fixed-footer">
       <div class="modal-content" v-if="selectedCounsellor">
-        <h4>Book Session with {{ selectedCounsellor.name }}</h4>
+        <h4>Book Session with {{ selectedCounsellor.displayName }}</h4>
 
         <form @submit.prevent="submitBooking">
           <div class="row">
@@ -427,7 +427,7 @@
 
           <div class="booking-summary card-panel grey lighten-5">
             <h6>Booking Summary</h6>
-            <p><strong>Counsellor:</strong> {{ selectedCounsellor.name }}</p>
+            <p><strong>Counsellor:</strong> {{ selectedCounsellor.displayName }}</p>
             <p><strong>Date:</strong> {{ formatBookingDate(booking.date) }}</p>
             <p><strong>Time:</strong> {{ booking.time }}</p>
             <p><strong>Duration:</strong> {{ booking.duration }} minutes</p>
@@ -613,7 +613,7 @@ const submitBooking = async () => {
     const appointmentData = {
       userId: user.value.uid,
       counsellorId: selectedCounsellor.value.id,
-      counsellorName: selectedCounsellor.value.name,
+      counsellorName: selectedCounsellor.value.displayName,
       userName: user.value.displayName,
       appointmentDate: new Date(`${booking.date}T${booking.time}`),
       sessionType: booking.sessionType,

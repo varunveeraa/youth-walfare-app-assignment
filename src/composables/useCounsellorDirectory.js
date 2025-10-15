@@ -40,10 +40,10 @@ export const useCounsellorDirectory = () => {
     // Apply search filter (name, bio, specialties)
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
-      filtered = filtered.filter(counsellor => 
-        counsellor.name?.toLowerCase().includes(query) ||
+      filtered = filtered.filter(counsellor =>
+        counsellor.displayName?.toLowerCase().includes(query) ||
         counsellor.bio?.toLowerCase().includes(query) ||
-        counsellor.specialties?.some(specialty => 
+        counsellor.specializations?.some(specialty =>
           specialty.toLowerCase().includes(query)
         )
       )
@@ -51,8 +51,8 @@ export const useCounsellorDirectory = () => {
 
     // Apply specialty filter
     if (selectedSpecialty.value) {
-      filtered = filtered.filter(counsellor => 
-        counsellor.specialties?.includes(selectedSpecialty.value)
+      filtered = filtered.filter(counsellor =>
+        counsellor.specializations?.includes(selectedSpecialty.value)
       )
     }
 
