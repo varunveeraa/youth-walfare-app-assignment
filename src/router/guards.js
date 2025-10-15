@@ -31,7 +31,17 @@ export const requireGuest = (to, from, next) => {
   if (!isAuthenticated.value) {
     next()
   } else {
-    next({ name: 'Dashboard' })
+    // Redirect authenticated users to their role-specific dashboard
+    const { isYouthUser, isCounsellor, isAdmin } = useAuth()
+    if (isYouthUser.value) {
+      next({ name: 'YouthDashboard' })
+    } else if (isCounsellor.value) {
+      next({ name: 'CounsellorDashboard' })
+    } else if (isAdmin.value) {
+      next({ name: 'AdminDashboard' })
+    } else {
+      next({ name: 'Dashboard' })
+    }
   }
 }
 
@@ -91,12 +101,12 @@ export const requireAdmin = (to, from, next) => {
 export const requireRole = (allowedRoles) => {
   return (to, from, next) => {
     const { isAuthenticated, userRole, loading } = useAuth()
-    
+
     if (loading.value) {
       setTimeout(() => requireRole(allowedRoles)(to, from, next), 100)
       return
     }
-    
+
     if (!isAuthenticated.value) {
       next({ name: 'Login', query: { redirect: to.fullPath } })
     } else if (allowedRoles.includes(userRole.value)) {
@@ -104,5 +114,32 @@ export const requireRole = (allowedRoles) => {
     } else {
       next({ name: 'Unauthorized' })
     }
+  }
+}
+
+// Smart dashboard guard - redirects to role-specific dashboard immediately
+export const requireDashboard = (to, from, next) => {
+  const { isAuthenticated, isYouthUser, isCounsellor, isAdmin, loading } = useAuth()
+
+  if (loading.value) {
+    setTimeout(() => requireDashboard(to, from, next), 100)
+    return
+  }
+
+  if (!isAuthenticated.value) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+    return
+  }
+
+  // Immediately redirect to role-specific dashboard
+  if (isYouthUser.value) {
+    next({ name: 'YouthDashboard' })
+  } else if (isCounsellor.value) {
+    next({ name: 'CounsellorDashboard' })
+  } else if (isAdmin.value) {
+    next({ name: 'AdminDashboard' })
+  } else {
+    // Fallback - stay on general dashboard if role is unclear
+    next()
   }
 }

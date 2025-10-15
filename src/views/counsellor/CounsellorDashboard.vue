@@ -75,34 +75,121 @@
       <!-- Performance Stats -->
       <div class="row">
         <div class="col s12">
-          <h5>Performance Overview</h5>
-        </div>
-
-        <div class="col s12 m6 l3">
-          <div class="card-panel center-align">
-            <h4 class="blue-text">{{ practiceStats.totalClients }}</h4>
-            <p>Total Clients</p>
+          <div class="row valign-wrapper">
+            <div class="col s8">
+              <h5>Performance Overview</h5>
+            </div>
+            <div class="col s4 right-align">
+              <button
+                @click="handleSeedTestData"
+                class="btn-small blue lighten-1 waves-effect waves-light"
+                :disabled="seeding"
+              >
+                <i class="material-icons left">data_usage</i>
+                {{ seeding ? 'Seeding...' : 'Seed Test Data' }}
+              </button>
+              <button
+                @click="handleRefreshStats"
+                class="btn-small blue waves-effect waves-light"
+                :disabled="loading"
+                style="margin-left: 0.5rem;"
+              >
+                <i class="material-icons left">refresh</i>
+                {{ loading ? 'Loading...' : 'Refresh' }}
+              </button>
+            </div>
+          </div>
+          <div v-if="error" class="card-panel red lighten-4 red-text">
+            <i class="material-icons left">error</i>
+            Error loading statistics: {{ error }}
           </div>
         </div>
 
         <div class="col s12 m6 l3">
           <div class="card-panel center-align">
-            <h4 class="blue-text">{{ practiceStats.sessionsThisMonth }}</h4>
-            <p>Sessions This Month</p>
+            <div v-if="loading" class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                  <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <h4 class="blue-text">{{ practiceStats.totalClients }}</h4>
+              <p>Total Clients</p>
+            </div>
           </div>
         </div>
 
         <div class="col s12 m6 l3">
           <div class="card-panel center-align">
-            <h4 class="blue-text">{{ practiceStats.averageRating }}</h4>
-            <p>Average Rating</p>
+            <div v-if="loading" class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                  <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <h4 class="blue-text">{{ practiceStats.sessionsThisMonth }}</h4>
+              <p>Sessions This Month</p>
+            </div>
           </div>
         </div>
 
         <div class="col s12 m6 l3">
           <div class="card-panel center-align">
-            <h4 class="blue-text">{{ practiceStats.hoursAvailable }}</h4>
-            <p>Hours Available</p>
+            <div v-if="loading" class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                  <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <h4 class="blue-text">{{ practiceStats.averageRating }}</h4>
+              <p>Average Rating</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col s12 m6 l3">
+          <div class="card-panel center-align">
+            <div v-if="loading" class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                  <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <div v-else>
+              <h4 class="blue-text">{{ practiceStats.hoursAvailable }}</h4>
+              <p>Hours Available</p>
+            </div>
           </div>
         </div>
       </div>
@@ -115,20 +202,59 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useCounsellorStats } from '@/composables/useCounsellorStats'
+import { seedTestData } from '@/utils/seedTestData'
 
 const { user } = useAuth()
+const { practiceStats, loading, error, fetchCounsellorStats } = useCounsellorStats()
 
-const practiceStats = ref({
-  totalClients: 24,
-  sessionsThisMonth: 18,
-  averageRating: 4.8,
-  hoursAvailable: 32
-})
+const seeding = ref(false)
 
+// Seed test data for demonstration
+const handleSeedTestData = async () => {
+  if (!user.value?.uid) {
+    M.toast({ html: 'No user ID available', classes: 'red' })
+    return
+  }
 
+  seeding.value = true
+  try {
+    console.log('Seeding test data...')
+    const result = await seedTestData(user.value.uid)
+    console.log('Seeding result:', result)
 
-onMounted(() => {
-  // In a real app, fetch counsellor-specific data
+    M.toast({
+      html: `Test data seeded! ${result.appointmentsAdded} appointments, ${result.ratingsAdded} ratings`,
+      classes: 'green'
+    })
+
+    // Refresh stats after seeding
+    await fetchCounsellorStats(user.value.uid)
+
+  } catch (err) {
+    console.error('Error seeding test data:', err)
+    M.toast({ html: 'Error seeding test data: ' + err.message, classes: 'red' })
+  } finally {
+    seeding.value = false
+  }
+}
+
+// Refresh stats manually
+const handleRefreshStats = async () => {
+  if (user.value?.uid) {
+    await fetchCounsellorStats(user.value.uid)
+    M.toast({ html: 'Statistics refreshed!', classes: 'blue' })
+  }
+}
+
+onMounted(async () => {
+  // Fetch real counsellor statistics
+  if (user.value?.uid) {
+    console.log('Fetching stats for counsellor:', user.value.uid)
+    await fetchCounsellorStats(user.value.uid)
+  } else {
+    console.warn('No user ID available for stats fetching')
+  }
 })
 </script>
 

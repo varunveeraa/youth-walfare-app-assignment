@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { requireAuth, requireGuest, requireYouthUser, requireCounsellor, requireAdmin } from './guards'
+import { requireAuth, requireGuest, requireYouthUser, requireCounsellor, requireAdmin, requireDashboard } from './guards'
 
 // Lazy load components for better performance
 const Home = () => import('@/views/Home.vue')
@@ -48,7 +48,7 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-    beforeEnter: requireAuth
+    beforeEnter: requireDashboard
   },
   {
     path: '/unauthorized',

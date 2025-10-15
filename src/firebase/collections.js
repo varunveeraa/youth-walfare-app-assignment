@@ -22,7 +22,9 @@ export const COLLECTIONS = {
   APPOINTMENTS: 'appointments',
   RATINGS: 'ratings',
   COUNSELLOR_PROFILES: 'counsellorProfiles',
-  AVAILABILITY: 'availability'
+  AVAILABILITY: 'availability',
+  COUNSELLOR_SETTINGS: 'counsellorSettings',
+  COUNSELLOR_BREAKS: 'counsellorBreaks'
 }
 
 // Collection references
@@ -32,6 +34,8 @@ export const appointmentsCollection = collection(db, COLLECTIONS.APPOINTMENTS)
 export const ratingsCollection = collection(db, COLLECTIONS.RATINGS)
 export const counsellorProfilesCollection = collection(db, COLLECTIONS.COUNSELLOR_PROFILES)
 export const availabilityCollection = collection(db, COLLECTIONS.AVAILABILITY)
+export const counsellorSettingsCollection = collection(db, COLLECTIONS.COUNSELLOR_SETTINGS)
+export const counsellorBreaksCollection = collection(db, COLLECTIONS.COUNSELLOR_BREAKS)
 
 // Generic CRUD operations
 export const createDocument = async (collectionRef, data) => {
