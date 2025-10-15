@@ -24,6 +24,7 @@ const CounsellorAvailability = () => import('@/views/counsellor/CounsellorAvaila
 const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
 const EmailManagement = () => import('@/views/admin/EmailManagement.vue')
 const UserManagement = () => import('@/views/admin/UserManagement.vue')
+const UserManagement = () => import('@/views/admin/UserManagement.vue')
 const ContentManagement = () => import('@/views/admin/ContentManagement.vue')
 const PlatformSettings = () => import('@/views/admin/PlatformSettings.vue')
 
@@ -132,6 +133,12 @@ const routes = [
     path: '/admin/emails',
     name: 'EmailManagement',
     component: EmailManagement,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/users',
+    name: 'UserManagement',
+    component: UserManagement,
     beforeEnter: requireAdmin
   },
   {
