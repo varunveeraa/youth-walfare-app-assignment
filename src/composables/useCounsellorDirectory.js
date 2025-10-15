@@ -105,8 +105,9 @@ export const useCounsellorDirectory = () => {
       const counsellorsRef = collection(db, COLLECTIONS.COUNSELLOR_PROFILES)
       const q = query(
         counsellorsRef,
-        where('isActive', '==', true),
-        orderBy('createdAt', 'desc')
+        where('isActive', '==', true)
+        // Note: orderBy('createdAt', 'desc') temporarily removed until index builds
+        // Will be restored once Firestore composite index is ready
       )
       
       const querySnapshot = await getDocs(q)
@@ -131,6 +132,13 @@ export const useCounsellorDirectory = () => {
           responseTime: getResponseTime(counsellorData)
         })
       }
+
+      // Sort by createdAt desc (client-side until index is ready)
+      fetchedCounsellors.sort((a, b) => {
+        const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0)
+        const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0)
+        return dateB - dateA
+      })
 
       counsellors.value = fetchedCounsellors
       console.log(`Fetched ${fetchedCounsellors.length} counsellors`)
