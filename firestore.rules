@@ -106,8 +106,12 @@ service cloud.firestore {
     match /counsellorProfiles/{profileId} {
       // Allow all authenticated users to read active profiles
       allow read: if isAuthenticated() && resource.data.isActive == true;
-      // Allow counsellors to create/update their own profile
-      allow create, update: if isCounsellor() && isOwner(resource.data.userId);
+      // Allow counsellors to read their own profile (even if inactive)
+      allow read: if isCounsellor() && isOwner(resource.data.userId);
+      // Allow counsellors to create their own profile
+      allow create: if isCounsellor() && isOwner(request.resource.data.userId);
+      // Allow counsellors to update their own profile
+      allow update: if isCounsellor() && isOwner(resource.data.userId);
       // Allow admins to read/update all profiles
       allow read, update: if isAdmin();
     }

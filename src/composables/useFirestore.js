@@ -1,9 +1,11 @@
 import { ref, computed } from 'vue'
-import { 
-  createDocument, 
-  updateDocument, 
-  deleteDocument, 
-  getDocument, 
+import { doc, setDoc } from 'firebase/firestore'
+import { db } from '@/firebase/config'
+import {
+  createDocument,
+  updateDocument,
+  deleteDocument,
+  getDocument,
   getDocuments,
   usersCollection,
   resourcesCollection,
@@ -202,7 +204,31 @@ export const useRatings = () => {
 export const useCounsellorProfiles = () => {
   const firestore = useFirestore()
 
-  const createProfile = (profileData) => firestore.create(counsellorProfilesCollection, profileData)
+  // Custom create function that uses userId as document ID
+  const createProfile = async (profileData) => {
+    try {
+      firestore.loading.value = true
+      firestore.error.value = null
+
+      const { userId, ...data } = profileData
+      const docRef = doc(db, COLLECTIONS.COUNSELLOR_PROFILES, userId)
+
+      await setDoc(docRef, {
+        ...data,
+        userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+
+      return userId
+    } catch (err) {
+      firestore.error.value = err.message
+      throw err
+    } finally {
+      firestore.loading.value = false
+    }
+  }
+
   const updateProfile = (profileId, profileData) => firestore.update(COLLECTIONS.COUNSELLOR_PROFILES, profileId, profileData)
   const getProfile = (profileId) => firestore.get(COLLECTIONS.COUNSELLOR_PROFILES, profileId)
   const deleteProfile = (profileId) => firestore.remove(COLLECTIONS.COUNSELLOR_PROFILES, profileId)
