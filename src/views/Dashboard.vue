@@ -190,8 +190,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
+import { useRouter } from 'vue-router'
 
-const { user, isYouthUser, isCounsellor, isAdmin } = useAuth()
+const { user, isYouthUser, isCounsellor, isAdmin, userRole } = useAuth()
+const router = useRouter()
 
 const stats = ref({
   totalUsers: 1247,
@@ -201,6 +203,18 @@ const stats = ref({
 })
 
 onMounted(() => {
+  // Auto-redirect to role-specific dashboard
+  // Comment out the redirection to keep the unified dashboard
+  // Uncomment these lines if you want automatic redirection:
+
+  // if (isYouthUser.value) {
+  //   router.push('/youth')
+  // } else if (isCounsellor.value) {
+  //   router.push('/counsellor')
+  // } else if (isAdmin.value) {
+  //   router.push('/admin')
+  // }
+
   // In a real app, you would fetch these stats from your API
   // For now, we're using mock data
 })
