@@ -500,7 +500,7 @@ const profile = reactive({
   qualifications: [],
   sessionTypes: ['video'],
   languages: ['English'],
-  isActive: false,
+  isActive: true,  // Default to active so profiles are visible
   isVerified: false,
   profilePicture: ''
 })
@@ -691,6 +691,9 @@ const saveProfile = async () => {
       updatedAt: new Date()
     }
 
+    console.log('Saving profile data:', profileData)
+    console.log('Profile isActive:', profileData.isActive)
+
     if (profileExists.value) {
       await updateProfile(user.value.uid, profileData)
       M.toast({ html: 'Profile updated successfully!', classes: 'green' })
@@ -700,6 +703,8 @@ const saveProfile = async () => {
       profileExists.value = true
       M.toast({ html: 'Profile created successfully!', classes: 'green' })
     }
+
+    console.log('Profile saved successfully')
   } catch (err) {
     console.error('Error saving profile:', err)
     M.toast({ html: 'Error saving profile: ' + err.message, classes: 'red' })

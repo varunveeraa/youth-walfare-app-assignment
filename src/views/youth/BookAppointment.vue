@@ -449,21 +449,28 @@ const minDate = computed(() => {
 // Methods
 const loadCounsellors = async () => {
   try {
+    console.log('Loading counsellors...')
+
+    // For now, only require isActive (remove verification requirement for testing)
     const constraints = [
-      where('isActive', '==', true),
-      where('isVerified', '==', true),
-      orderBy('averageRating', 'desc')
+      where('isActive', '==', true)
+      // Temporarily remove orderBy to avoid index issues
+      // orderBy('averageRating', 'desc')
     ]
 
     const fetchedCounsellors = await getAllProfiles(constraints)
+    console.log('Fetched counsellors:', fetchedCounsellors)
 
     // Add mock availability status
     counsellors.value = fetchedCounsellors.map(counsellor => ({
       ...counsellor,
       isAvailable: Math.random() > 0.3 // 70% chance of being available
     }))
+
+    console.log('Final counsellors list:', counsellors.value)
   } catch (err) {
     console.error('Error loading counsellors:', err)
+    console.error('Error details:', err.message)
   }
 }
 
