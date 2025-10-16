@@ -28,6 +28,9 @@ const CounsellorDirectory = () => import('@/views/CounsellorDirectory.vue')
 const ContentManagement = () => import('@/views/admin/ContentManagement.vue')
 const PlatformSettings = () => import('@/views/admin/PlatformSettings.vue')
 
+// GeoLocation Route
+const GeoLocation = () => import('@/views/GeoLocation.vue')
+
 const routes = [
   {
     path: '/',
@@ -88,6 +91,12 @@ const routes = [
     name: 'RateCounsellor',
     component: () => import('@/views/youth/RateCounsellor.vue'),
     beforeEnter: requireYouthUser
+  },
+  {
+    path: '/location',
+    name: 'GeoLocation',
+    component: GeoLocation
+    // Public route - accessible to all users
   },
   
   // Counsellor Routes

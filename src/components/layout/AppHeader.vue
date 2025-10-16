@@ -15,6 +15,9 @@
       <ul class="right hide-on-med-and-down">
         <template v-if="!isAuthenticated">
           <li><router-link to="/counsellors">Find Counsellors</router-link></li>
+          <li><router-link to="/location">
+            <i class="material-icons left">nature_people</i>Wellness Spaces
+          </router-link></li>
           <li><router-link to="/login">Login</router-link></li>
           <li><router-link to="/register">Register</router-link></li>
         </template>
@@ -26,6 +29,9 @@
             <li><router-link to="/resources">Resources</router-link></li>
             <li><router-link to="/counsellors">Find Counsellors</router-link></li>
             <li><router-link to="/book-appointment">Book Session</router-link></li>
+            <li><router-link to="/location">
+              <i class="material-icons left">nature_people</i>Wellness
+            </router-link></li>
           </template>
           
           <!-- Counsellor Navigation -->
@@ -35,6 +41,9 @@
             <li><router-link to="/counsellor/appointments">Appointments</router-link></li>
             <li><router-link to="/counsellor/availability">Availability</router-link></li>
             <li><router-link to="/counsellor/ratings">Ratings</router-link></li>
+            <li><router-link to="/location">
+              <i class="material-icons left">nature_people</i>Wellness
+            </router-link></li>
           </template>
           
           <!-- Admin Navigation -->
@@ -42,6 +51,9 @@
             <li><router-link to="/admin">Admin</router-link></li>
             <li><router-link to="/admin/users">Users</router-link></li>
             <li><router-link to="/admin/content">Content</router-link></li>
+            <li><router-link to="/location">
+              <i class="material-icons left">nature_people</i>Wellness
+            </router-link></li>
           </template>
           
           <!-- Direct logout button (for testing) -->
@@ -92,6 +104,9 @@
     
     <template v-if="!isAuthenticated">
       <li><router-link to="/counsellors">Find Counsellors</router-link></li>
+      <li><router-link to="/location">
+        <i class="material-icons left">nature_people</i>Wellness Spaces
+      </router-link></li>
       <li><router-link to="/login">Login</router-link></li>
       <li><router-link to="/register">Register</router-link></li>
     </template>
@@ -103,6 +118,9 @@
         <li><router-link to="/resources">Resources</router-link></li>
         <li><router-link to="/counsellors">Find Counsellors</router-link></li>
         <li><router-link to="/book-appointment">Book Session</router-link></li>
+        <li><router-link to="/location">
+          <i class="material-icons left">nature_people</i>Wellness
+        </router-link></li>
       </template>
       
       <template v-if="isCounsellor">
@@ -111,12 +129,18 @@
         <li><router-link to="/counsellor/appointments">Appointments</router-link></li>
         <li><router-link to="/counsellor/availability">Availability</router-link></li>
         <li><router-link to="/counsellor/ratings">Ratings</router-link></li>
+        <li><router-link to="/location">
+          <i class="material-icons left">nature_people</i>Wellness
+        </router-link></li>
       </template>
       
       <template v-if="isAdmin">
         <li><router-link to="/admin">Admin Dashboard</router-link></li>
         <li><router-link to="/admin/users">User Management</router-link></li>
         <li><router-link to="/admin/content">Content Management</router-link></li>
+        <li><router-link to="/location">
+          <i class="material-icons left">nature_people</i>Wellness
+        </router-link></li>
       </template>
       
       <li><div class="divider"></div></li>
