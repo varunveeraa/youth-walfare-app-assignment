@@ -1,8 +1,8 @@
 import sgMail from '@sendgrid/mail'
 import ical from 'ical-generator'
 
-// Initialize SendGrid with API key
-const SENDGRID_API_KEY = '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'
+// Initialize SendGrid with API key from environment variables
+const SENDGRID_API_KEY = import.meta.env.VITE_SENDGRID_API_KEY || 'your-sendgrid-api-key-here'
 sgMail.setApiKey(SENDGRID_API_KEY)
 
 // Verified sender email (must be verified in SendGrid)
