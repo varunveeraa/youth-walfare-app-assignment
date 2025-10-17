@@ -106,91 +106,37 @@ export const useFirestore = () => {
   }
 }
 
-// Specific composables for different entities
-export const useUsers = () => {
+// Generic CRUD composable factory
+export const useEntity = (entityName, collectionRef) => {
   const firestore = useFirestore()
+  const capitalizedEntity = entityName.charAt(0).toUpperCase() + entityName.slice(1)
 
-  const createUser = (userData) => firestore.create(usersCollection, userData)
-  const updateUser = (userId, userData) => firestore.update(COLLECTIONS.USERS, userId, userData)
-  const getUser = (userId) => firestore.get(COLLECTIONS.USERS, userId)
-  const deleteUser = (userId) => firestore.remove(COLLECTIONS.USERS, userId)
-
-  return {
-    ...firestore,
-    createUser,
-    updateUser,
-    getUser,
-    deleteUser
+  // Create dynamic method names
+  const methods = {
+    [`create${capitalizedEntity}`]: (data) => firestore.create(collectionRef, data),
+    [`update${capitalizedEntity}`]: (id, data) => firestore.update(entityName + 's', id, data),
+    [`get${capitalizedEntity}`]: (id) => firestore.get(entityName + 's', id),
+    [`delete${capitalizedEntity}`]: (id) => firestore.remove(entityName + 's', id),
+    [`getAll${capitalizedEntity}s`]: (queryConstraints) => firestore.getAll(collectionRef, queryConstraints)
   }
+
+  return { ...firestore, ...methods }
 }
 
-export const useResources = () => {
-  const firestore = useFirestore()
-
-  const createResource = (resourceData) => firestore.create(resourcesCollection, resourceData)
-  const updateResource = (resourceId, resourceData) => firestore.update(COLLECTIONS.RESOURCES, resourceId, resourceData)
-  const getResource = (resourceId) => firestore.get(COLLECTIONS.RESOURCES, resourceId)
-  const deleteResource = (resourceId) => firestore.remove(COLLECTIONS.RESOURCES, resourceId)
-  const getAllResources = (queryConstraints) => firestore.getAll(resourcesCollection, queryConstraints)
-
-  return {
-    ...firestore,
-    createResource,
-    updateResource,
-    getResource,
-    deleteResource,
-    getAllResources
-  }
-}
-
-
-
-export const useAppointments = () => {
-  const firestore = useFirestore()
-
-  const createAppointment = (appointmentData) => firestore.create(appointmentsCollection, appointmentData)
-  const updateAppointment = (appointmentId, appointmentData) => firestore.update(COLLECTIONS.APPOINTMENTS, appointmentId, appointmentData)
-  const getAppointment = (appointmentId) => firestore.get(COLLECTIONS.APPOINTMENTS, appointmentId)
-  const deleteAppointment = (appointmentId) => firestore.remove(COLLECTIONS.APPOINTMENTS, appointmentId)
-  const getAllAppointments = (queryConstraints) => firestore.getAll(appointmentsCollection, queryConstraints)
-
-  return {
-    ...firestore,
-    createAppointment,
-    updateAppointment,
-    getAppointment,
-    deleteAppointment,
-    getAllAppointments
-  }
-}
-
-export const useRatings = () => {
-  const firestore = useFirestore()
-
-  const createRating = (ratingData) => firestore.create(ratingsCollection, ratingData)
-  const updateRating = (ratingId, ratingData) => firestore.update(COLLECTIONS.RATINGS, ratingId, ratingData)
-  const getRating = (ratingId) => firestore.get(COLLECTIONS.RATINGS, ratingId)
-  const deleteRating = (ratingId) => firestore.remove(COLLECTIONS.RATINGS, ratingId)
-  const getAllRatings = (queryConstraints) => firestore.getAll(ratingsCollection, queryConstraints)
-
-  return {
-    ...firestore,
-    createRating,
-    updateRating,
-    getRating,
-    deleteRating,
-    getAllRatings
-  }
-}
+// Specific composables using the factory
+export const useUsers = () => useEntity('user', usersCollection)
+export const useResources = () => useEntity('resource', resourcesCollection)
+export const useAppointments = () => useEntity('appointment', appointmentsCollection)
+export const useRatings = () => useEntity('rating', ratingsCollection)
 
 export const useCounsellorProfiles = () => {
-  const firestore = useFirestore()
+  const baseEntity = useEntity('counsellorProfile', counsellorProfilesCollection)
 
-  // Custom create function that uses userId as document ID
+  // Override create method for custom userId logic
   const createProfile = async (profileData) => {
     try {
-      firestore.loading.value = true
-      firestore.error.value = null
+      baseEntity.loading.value = true
+      baseEntity.error.value = null
 
       const { userId, ...data } = profileData
       const docRef = doc(db, COLLECTIONS.COUNSELLOR_PROFILES, userId)
@@ -204,24 +150,12 @@ export const useCounsellorProfiles = () => {
 
       return userId
     } catch (err) {
-      firestore.error.value = err.message
+      baseEntity.error.value = err.message
       throw err
     } finally {
-      firestore.loading.value = false
+      baseEntity.loading.value = false
     }
   }
 
-  const updateProfile = (profileId, profileData) => firestore.update(COLLECTIONS.COUNSELLOR_PROFILES, profileId, profileData)
-  const getProfile = (profileId) => firestore.get(COLLECTIONS.COUNSELLOR_PROFILES, profileId)
-  const deleteProfile = (profileId) => firestore.remove(COLLECTIONS.COUNSELLOR_PROFILES, profileId)
-  const getAllProfiles = (queryConstraints) => firestore.getAll(counsellorProfilesCollection, queryConstraints)
-
-  return {
-    ...firestore,
-    createProfile,
-    updateProfile,
-    getProfile,
-    deleteProfile,
-    getAllProfiles
-  }
+  return { ...baseEntity, createProfile }
 }

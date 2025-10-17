@@ -1,218 +1,143 @@
 <template>
-  <div class="register center-content">
-    <div class="container">
-      <div class="row">
-        <div class="col s12 m10 offset-m1 l8 offset-l2">
-          <div class="card-panel">
-            <div class="center-align">
-              <i class="material-icons large teal-text">person_add</i>
-              <h4>Join MindBridge</h4>
-              <p class="grey-text">Create your account to get started</p>
-            </div>
-            
-            <form @submit.prevent="handleRegister">
-              <div class="row">
-                <!-- Display Name -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">person</i>
-                  <input 
-                    id="displayName" 
-                    type="text" 
-                    v-model="form.displayName"
-                    :class="{ invalid: errors.displayName }"
-                    required
-                  >
-                  <label for="displayName">Full Name</label>
-                  <span v-if="errors.displayName" class="helper-text error-text">
-                    {{ errors.displayName }}
-                  </span>
-                </div>
-                
-                <!-- Email -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">email</i>
-                  <input 
-                    id="email" 
-                    type="email" 
-                    v-model="form.email"
-                    :class="{ invalid: errors.email }"
-                    required
-                  >
-                  <label for="email">Email</label>
-                  <span v-if="errors.email" class="helper-text error-text">
-                    {{ errors.email }}
-                  </span>
-                </div>
-              </div>
-              
-              <div class="row">
-                <!-- Password -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">lock</i>
-                  <input 
-                    id="password" 
-                    :type="showPassword ? 'text' : 'password'"
-                    v-model="form.password"
-                    :class="{ invalid: errors.password }"
-                    required
-                  >
-                  <label for="password">Password</label>
-                  <i 
-                    class="material-icons suffix password-toggle" 
-                    @click="showPassword = !showPassword"
-                  >
-                    {{ showPassword ? 'visibility_off' : 'visibility' }}
-                  </i>
-                  <span v-if="errors.password" class="helper-text error-text">
-                    {{ errors.password }}
-                  </span>
-                </div>
-                
-                <!-- Confirm Password -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">lock_outline</i>
-                  <input 
-                    id="confirmPassword" 
-                    :type="showConfirmPassword ? 'text' : 'password'"
-                    v-model="form.confirmPassword"
-                    :class="{ invalid: errors.confirmPassword }"
-                    required
-                  >
-                  <label for="confirmPassword">Confirm Password</label>
-                  <i 
-                    class="material-icons suffix password-toggle" 
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  >
-                    {{ showConfirmPassword ? 'visibility_off' : 'visibility' }}
-                  </i>
-                  <span v-if="errors.confirmPassword" class="helper-text error-text">
-                    {{ errors.confirmPassword }}
-                  </span>
-                </div>
-              </div>
-              
-              <div class="row">
-                <!-- Age -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">cake</i>
-                  <input 
-                    id="age" 
-                    type="number" 
-                    v-model="form.age"
-                    :class="{ invalid: errors.age }"
-                    min="13"
-                    max="100"
-                    required
-                  >
-                  <label for="age">Age</label>
-                  <span v-if="errors.age" class="helper-text error-text">
-                    {{ errors.age }}
-                  </span>
-                </div>
-                
-                <!-- Role Selection -->
-                <div class="input-field col s12 m6">
-                  <i class="material-icons prefix">assignment_ind</i>
-                  <select v-model="form.role" :class="{ invalid: errors.role }" required>
-                    <option value="" disabled>Choose your role</option>
-                    <option value="youth">Youth User</option>
-                    <option value="counsellor">Counsellor</option>
-                  </select>
-                  <label>I am a...</label>
-                  <span v-if="errors.role" class="helper-text error-text">
-                    {{ errors.role }}
-                  </span>
-                </div>
-              </div>
-              
-              <!-- Terms and Conditions -->
-              <p>
-                <label>
-                  <input type="checkbox" v-model="form.agreeToTerms" />
-                  <span>
-                    I agree to the 
-                    <a href="#" class="teal-text">Terms of Service</a> 
-                    and 
-                    <a href="#" class="teal-text">Privacy Policy</a>
-                  </span>
-                </label>
-              </p>
-              <span v-if="errors.agreeToTerms" class="error-text">
-                {{ errors.agreeToTerms }}
-              </span>
-              
-              <!-- Error Message -->
-              <div v-if="authError" class="card-panel red lighten-4 red-text text-darken-2">
-                <i class="material-icons left">error</i>
-                {{ authError }}
-              </div>
-              
-              <!-- Test Button (for debugging) -->
-              <div class="center-align" style="margin-bottom: 1rem;">
-                <button
-                  @click="testFirebaseConnection"
-                  type="button"
-                  class="btn waves-effect waves-light blue"
-                >
-                  <i class="material-icons left">cloud</i>
-                  Test Firebase Connection
-                </button>
-              </div>
+  <FormCard
+    title="Join MindBridge"
+    subtitle="Create your account to get started"
+    icon="person_add"
+    :error="authError"
+    :loading="loading"
+    submit-text="Create Account"
+    submit-icon="person_add"
+    loading-text="Creating Account..."
+    @submit="handleRegister"
+  >
+    <div class="row">
+      <div class="col s12 m6">
+        <FormField
+          id="displayName"
+          label="Full Name"
+          icon="person"
+          v-model="form.displayName"
+          :error="errors.displayName"
+          required
+        />
+      </div>
 
-              <!-- Submit Button -->
-              <div class="center-align">
-                <button
-                  type="submit"
-                  class="btn-large waves-effect waves-light teal"
-                  :disabled="loading"
-                >
-                  <span v-if="loading">
-                    <i class="material-icons left">hourglass_empty</i>
-                    Creating Account...
-                  </span>
-                  <span v-else>
-                    <i class="material-icons left">person_add</i>
-                    Create Account
-                  </span>
-                </button>
-              </div>
-            </form>
-            
-            <!-- Additional Links -->
-            <div class="center-align" style="margin-top: 2rem;">
-              <p>
-                Already have an account? 
-                <router-link to="/login" class="teal-text">Sign in here</router-link>
-              </p>
-            </div>
-          </div>
+      <div class="col s12 m6">
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          icon="email"
+          v-model="form.email"
+          :error="errors.email"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s12 m6">
+        <FormField
+          id="password"
+          label="Password"
+          type="password"
+          icon="lock"
+          v-model="form.password"
+          :error="errors.password"
+          required
+        />
+      </div>
+
+      <div class="col s12 m6">
+        <FormField
+          id="confirmPassword"
+          label="Confirm Password"
+          type="password"
+          icon="lock_outline"
+          v-model="form.confirmPassword"
+          :error="errors.confirmPassword"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s12 m6">
+        <FormField
+          id="age"
+          label="Age"
+          type="number"
+          icon="cake"
+          v-model="form.age"
+          :error="errors.age"
+          required
+        />
+      </div>
+
+      <div class="col s12 m6">
+        <div class="input-field">
+          <i class="material-icons prefix">assignment_ind</i>
+          <select v-model="form.role" :class="{ invalid: errors.role }" required>
+            <option value="" disabled>Choose your role</option>
+            <option value="youth">Youth User</option>
+            <option value="counsellor">Counsellor</option>
+          </select>
+          <label>I am a...</label>
+          <span v-if="errors.role" class="helper-text error-text">
+            {{ errors.role }}
+          </span>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Terms and Conditions -->
+    <p>
+      <label>
+        <input type="checkbox" v-model="form.agreeToTerms" />
+        <span>
+          I agree to the
+          <a href="#" class="teal-text">Terms of Service</a>
+          and
+          <a href="#" class="teal-text">Privacy Policy</a>
+        </span>
+      </label>
+    </p>
+    <span v-if="errors.agreeToTerms" class="error-text">
+      {{ errors.agreeToTerms }}
+    </span>
+
+    <!-- Test Button (for debugging) -->
+    <div class="center-align" style="margin-bottom: 1rem;">
+      <button
+        @click="testFirebaseConnection"
+        type="button"
+        class="btn waves-effect waves-light blue"
+      >
+        <i class="material-icons left">cloud</i>
+        Test Firebase Connection
+      </button>
+    </div>
+
+    <template #footer>
+      <p>
+        Already have an account?
+        <router-link to="/login" class="teal-text">Sign in here</router-link>
+      </p>
+    </template>
+  </FormCard>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-// Email service removed - emails now sent via Cloud Functions
+import { useFormValidation, commonRules } from '@/composables/useFormValidation'
 import { auth, db } from '@/firebase/config'
-import {
-  validateEmail,
-  validatePassword,
-  validateConfirmPassword,
-  validateName,
-  validateAge,
-  validateRequired
-} from '@/utils/validation'
+import FormCard from '@/components/form/FormCard.vue'
+import FormField from '@/components/form/FormField.vue'
 
 const router = useRouter()
 const { register, loading, error: authError, clearError } = useAuth()
-// Welcome emails now sent automatically via Cloud Functions
-
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
 
 const form = reactive({
   displayName: '',
@@ -224,27 +149,20 @@ const form = reactive({
   agreeToTerms: false
 })
 
-const errors = reactive({
-  displayName: null,
-  email: null,
-  password: null,
-  confirmPassword: null,
-  age: null,
-  role: null,
-  agreeToTerms: null
+const { errors, validateForm } = useFormValidation(form, {
+  displayName: commonRules.name,
+  email: commonRules.email,
+  password: commonRules.password,
+  confirmPassword: commonRules.confirmPassword('password'),
+  age: commonRules.age,
+  role: commonRules.required('Role'),
+  agreeToTerms: [{
+    validator: (value) => value ? null : 'You must agree to the terms and conditions',
+    message: 'You must agree to the terms and conditions'
+  }]
 })
 
-const validateForm = () => {
-  errors.displayName = validateName(form.displayName)
-  errors.email = validateEmail(form.email)
-  errors.password = validatePassword(form.password)
-  errors.confirmPassword = validateConfirmPassword(form.password, form.confirmPassword)
-  errors.age = validateAge(form.age)
-  errors.role = validateRequired(form.role, 'Role')
-  errors.agreeToTerms = form.agreeToTerms ? null : 'You must agree to the terms and conditions'
-  
-  return !Object.values(errors).some(error => error !== null)
-}
+
 
 const testFirebaseConnection = async () => {
   try {

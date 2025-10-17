@@ -1,101 +1,57 @@
 import { useAuth } from '@/composables/useAuth'
 
-// Authentication guard - requires user to be logged in
-export const requireAuth = (to, from, next) => {
-  const { isAuthenticated, loading } = useAuth()
-  
+// Generic guard factory
+const createGuard = (checkFn, redirectFn) => (to, from, next) => {
+  const auth = useAuth()
+
   // Wait for auth state to be determined
-  if (loading.value) {
-    // You might want to show a loading spinner here
-    setTimeout(() => requireAuth(to, from, next), 100)
+  if (auth.loading.value) {
+    setTimeout(() => createGuard(checkFn, redirectFn)(to, from, next), 100)
     return
   }
-  
-  if (isAuthenticated.value) {
+
+  if (checkFn(auth)) {
     next()
   } else {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    redirectFn(to, from, next, auth)
   }
 }
+
+// Role-specific dashboard mapping
+const getDashboardRoute = (auth) => {
+  if (auth.isYouthUser.value) return { name: 'YouthDashboard' }
+  if (auth.isCounsellor.value) return { name: 'CounsellorDashboard' }
+  if (auth.isAdmin.value) return { name: 'AdminDashboard' }
+  return { name: 'Dashboard' }
+}
+
+// Authentication guard - requires user to be logged in
+export const requireAuth = createGuard(
+  (auth) => auth.isAuthenticated.value,
+  (to, from, next) => next({ name: 'Login', query: { redirect: to.fullPath } })
+)
 
 // Guest guard - redirects authenticated users away from auth pages
-export const requireGuest = (to, from, next) => {
-  const { isAuthenticated, loading } = useAuth()
-  
-  // Wait for auth state to be determined
-  if (loading.value) {
-    setTimeout(() => requireGuest(to, from, next), 100)
-    return
-  }
-  
-  if (!isAuthenticated.value) {
-    next()
-  } else {
-    // Redirect authenticated users to their role-specific dashboard
-    const { isYouthUser, isCounsellor, isAdmin } = useAuth()
-    if (isYouthUser.value) {
-      next({ name: 'YouthDashboard' })
-    } else if (isCounsellor.value) {
-      next({ name: 'CounsellorDashboard' })
-    } else if (isAdmin.value) {
-      next({ name: 'AdminDashboard' })
+export const requireGuest = createGuard(
+  (auth) => !auth.isAuthenticated.value,
+  (to, from, next, auth) => next(getDashboardRoute(auth))
+)
+
+// Role-based guards using the factory
+const createRoleGuard = (roleCheck) => createGuard(
+  (auth) => auth.isAuthenticated.value && roleCheck(auth),
+  (to, from, next, auth) => {
+    if (!auth.isAuthenticated.value) {
+      next({ name: 'Login', query: { redirect: to.fullPath } })
     } else {
-      next({ name: 'Dashboard' })
+      next({ name: 'Unauthorized' })
     }
   }
-}
+)
 
-// Role-based guards
-export const requireYouthUser = (to, from, next) => {
-  const { isAuthenticated, isYouthUser, loading } = useAuth()
-  
-  if (loading.value) {
-    setTimeout(() => requireYouthUser(to, from, next), 100)
-    return
-  }
-  
-  if (!isAuthenticated.value) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
-  } else if (isYouthUser.value) {
-    next()
-  } else {
-    next({ name: 'Unauthorized' })
-  }
-}
-
-export const requireCounsellor = (to, from, next) => {
-  const { isAuthenticated, isCounsellor, loading } = useAuth()
-  
-  if (loading.value) {
-    setTimeout(() => requireCounsellor(to, from, next), 100)
-    return
-  }
-  
-  if (!isAuthenticated.value) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
-  } else if (isCounsellor.value) {
-    next()
-  } else {
-    next({ name: 'Unauthorized' })
-  }
-}
-
-export const requireAdmin = (to, from, next) => {
-  const { isAuthenticated, isAdmin, loading } = useAuth()
-  
-  if (loading.value) {
-    setTimeout(() => requireAdmin(to, from, next), 100)
-    return
-  }
-  
-  if (!isAuthenticated.value) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
-  } else if (isAdmin.value) {
-    next()
-  } else {
-    next({ name: 'Unauthorized' })
-  }
-}
+export const requireYouthUser = createRoleGuard((auth) => auth.isYouthUser.value)
+export const requireCounsellor = createRoleGuard((auth) => auth.isCounsellor.value)
+export const requireAdmin = createRoleGuard((auth) => auth.isAdmin.value)
 
 // Combined guard for multiple roles
 export const requireRole = (allowedRoles) => {

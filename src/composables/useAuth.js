@@ -110,8 +110,19 @@ export const useAuth = () => {
     try {
       loading.value = true
       error.value = null
-      
+
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
+
+      // Wait for auth state to be updated
+      await new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+          if (firebaseUser && user.value) {
+            unsubscribe()
+            resolve()
+          }
+        })
+      })
+
       return userCredential
     } catch (err) {
       error.value = err.message
