@@ -22,11 +22,11 @@
 
       <div class="col s12 m6 l3">
         <DashboardCard
-          title="Book Session"
-          description="Schedule with a counsellor"
-          icon="event"
-          action-text="Book"
-          action-link="/book-appointment"
+          title="Find Your Counsellor"
+          description="Browse and connect with professionals"
+          icon="people"
+          action-text="Find"
+          action-link="/counsellors"
         />
       </div>
 
@@ -37,6 +37,16 @@
           icon="schedule"
           action-text="View"
           action-link="/my-appointments"
+        />
+      </div>
+
+      <div class="col s12 m6 l3">
+        <DashboardCard
+          title="Wellness Map"
+          description="Discover nearby wellness spaces"
+          icon="nature_people"
+          action-text="Explore"
+          action-link="/location"
         />
       </div>
     </div>

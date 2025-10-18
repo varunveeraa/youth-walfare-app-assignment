@@ -20,10 +20,18 @@
     <!-- Action buttons -->
     <div v-if="actionText || $slots.actions" class="card-action center-align">
       <slot name="actions">
-        <router-link v-if="actionLink" :to="actionLink" :class="`btn ${actionColor}`">
+        <router-link
+          v-if="actionLink"
+          :to="actionLink"
+          :class="`btn waves-effect waves-light ${actionColor}`"
+        >
           {{ actionText }}
         </router-link>
-        <button v-else-if="actionText" @click="$emit('action')" :class="`btn ${actionColor}`">
+        <button
+          v-else-if="actionText"
+          @click="$emit('action')"
+          :class="`btn waves-effect waves-light ${actionColor}`"
+        >
           {{ actionText }}
         </button>
       </slot>

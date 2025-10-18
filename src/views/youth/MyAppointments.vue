@@ -83,9 +83,9 @@
           <div v-if="filteredAppointments.length === 0 && !loading" class="center-align">
             <i class="material-icons large grey-text">event_busy</i>
             <p class="grey-text">No {{ activeTab === 'all' ? '' : activeTab }} appointments found.</p>
-            <router-link to="/book-appointment" class="btn waves-effect waves-light teal">
+            <router-link to="/counsellors" class="btn waves-effect waves-light teal">
               <i class="material-icons left">add</i>
-              Book Your First Session
+              Find Your Counsellor
             </router-link>
           </div>
 
@@ -240,7 +240,20 @@ const loadAppointments = async () => {
     ]
 
     const fetchedAppointments = await getAllAppointments(constraints)
-    appointments.value = fetchedAppointments
+
+    // Convert Firebase Timestamps to JavaScript Dates
+    appointments.value = fetchedAppointments.map(appointment => ({
+      ...appointment,
+      appointmentDate: appointment.appointmentDate?.toDate ?
+        appointment.appointmentDate.toDate() :
+        new Date(appointment.appointmentDate),
+      createdAt: appointment.createdAt?.toDate ?
+        appointment.createdAt.toDate() :
+        new Date(appointment.createdAt),
+      updatedAt: appointment.updatedAt?.toDate ?
+        appointment.updatedAt.toDate() :
+        new Date(appointment.updatedAt)
+    }))
   } catch (err) {
     console.error('Error loading appointments:', err)
   }
@@ -251,21 +264,47 @@ const setActiveTab = (tab) => {
 }
 
 const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  if (!date) return 'Invalid Date'
+
+  try {
+    // Handle Firebase Timestamp objects
+    const jsDate = date?.toDate ? date.toDate() : new Date(date)
+
+    if (isNaN(jsDate.getTime())) {
+      return 'Invalid Date'
+    }
+
+    return jsDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return 'Invalid Date'
+  }
 }
 
 const formatTime = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  if (!date) return 'Invalid Date'
+
+  try {
+    // Handle Firebase Timestamp objects
+    const jsDate = date?.toDate ? date.toDate() : new Date(date)
+
+    if (isNaN(jsDate.getTime())) {
+      return 'Invalid Date'
+    }
+
+    return jsDate.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    console.error('Error formatting time:', error)
+    return 'Invalid Date'
+  }
 }
 
 const getStatusClass = (status) => {
@@ -332,9 +371,9 @@ const cancelAppointment = async (appointment) => {
 }
 
 const bookAgain = (appointment) => {
-  // Navigate to booking page with pre-filled counsellor
+  // Navigate to counsellor directory to find and book with the same counsellor
   router.push({
-    path: '/book-appointment',
+    path: '/counsellors',
     query: { counsellorId: appointment.counsellorId }
   })
 }

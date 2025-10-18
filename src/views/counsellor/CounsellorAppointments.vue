@@ -282,7 +282,20 @@ const loadAppointments = async () => {
 
     const fetchedAppointments = await getAllAppointments(constraints)
     console.log('Fetched appointments:', fetchedAppointments)
-    appointments.value = fetchedAppointments
+
+    // Convert Firebase Timestamps to JavaScript Dates
+    appointments.value = fetchedAppointments.map(appointment => ({
+      ...appointment,
+      appointmentDate: appointment.appointmentDate?.toDate ?
+        appointment.appointmentDate.toDate() :
+        new Date(appointment.appointmentDate),
+      createdAt: appointment.createdAt?.toDate ?
+        appointment.createdAt.toDate() :
+        new Date(appointment.createdAt),
+      updatedAt: appointment.updatedAt?.toDate ?
+        appointment.updatedAt.toDate() :
+        new Date(appointment.updatedAt)
+    }))
   } catch (err) {
     console.error('Error loading appointments:', err)
   }

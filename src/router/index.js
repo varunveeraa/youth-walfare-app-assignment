@@ -1,191 +1,188 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { requireAuth, requireGuest, requireYouthUser, requireCounsellor, requireAdmin, requireDashboard } from './guards'
 
-// Lazy load components for better performance
-const Home = () => import('@/views/Home.vue')
-const Login = () => import('@/views/auth/Login.vue')
-const Register = () => import('@/views/auth/Register.vue')
-const Dashboard = () => import('@/views/Dashboard.vue')
-const Unauthorized = () => import('@/views/Unauthorized.vue')
+// Asynchronous component loading for performance optimization
+const LandingPageInterface = () => import('@/views/Home.vue')
+const AuthenticationPortal = () => import('@/views/auth/Login.vue')
+const UserRegistrationPortal = () => import('@/views/auth/Register.vue')
+const CentralDashboardInterface = () => import('@/views/Dashboard.vue')
+const UnauthorizedAccessInterface = () => import('@/views/Unauthorized.vue')
 
-// Youth User Routes
-const YouthDashboard = () => import('@/views/youth/YouthDashboard.vue')
-const Resources = () => import('@/views/youth/Resources.vue')
-const BookAppointment = () => import('@/views/youth/BookAppointment.vue')
-const MyAppointments = () => import('@/views/youth/MyAppointments.vue')
+// Youth user workspace components
+const YouthUserWorkspace = () => import('@/views/youth/YouthDashboard.vue')
+const WellnessResourceRepository = () => import('@/views/youth/Resources.vue')
+const PersonalSessionHistory = () => import('@/views/youth/MyAppointments.vue')
 
-// Counsellor Routes
-const CounsellorDashboard = () => import('@/views/counsellor/CounsellorDashboard.vue')
-const CounsellorProfile = () => import('@/views/counsellor/CounsellorProfile.vue')
-const CounsellorAppointments = () => import('@/views/counsellor/CounsellorAppointments.vue')
-const CounsellorAvailability = () => import('@/views/counsellor/CounsellorAvailability.vue')
+// Professional counsellor workspace components
+const CounsellorWorkspaceInterface = () => import('@/views/counsellor/CounsellorDashboard.vue')
+const CounsellorProfileManagement = () => import('@/views/counsellor/CounsellorProfile.vue')
+const CounsellorSessionManagement = () => import('@/views/counsellor/CounsellorAppointments.vue')
+const CounsellorAvailabilityManager = () => import('@/views/counsellor/CounsellorAvailability.vue')
 
-// Admin Routes
-const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
-const EmailManagement = () => import('@/views/admin/EmailManagement.vue')
-const UserManagement = () => import('@/views/admin/UserManagement.vue')
-const CounsellorDirectory = () => import('@/views/CounsellorDirectory.vue')
-const ContentManagement = () => import('@/views/admin/ContentManagement.vue')
-const PlatformSettings = () => import('@/views/admin/PlatformSettings.vue')
+// System administration workspace components
+const SystemAdministrationInterface = () => import('@/views/admin/AdminDashboard.vue')
+const CommunicationManagementSystem = () => import('@/views/admin/EmailManagement.vue')
+const UserAccountManagementSystem = () => import('@/views/admin/UserManagement.vue')
+const ProfessionalDirectoryInterface = () => import('@/views/CounsellorDirectory.vue')
+const ContentManagementSystem = () => import('@/views/admin/ContentManagement.vue')
+const PlatformConfigurationInterface = () => import('@/views/admin/PlatformSettings.vue')
 
-// GeoLocation Route
-const GeoLocation = () => import('@/views/GeoLocation.vue')
+// Geographic wellness discovery interface
+const TherapeuticLocationDiscovery = () => import('@/views/GeoLocation.vue')
 
-const routes = [
+// Development test components
+const FormFieldTestComponent = () => import('@/components/form/FormFieldTest.vue')
+
+const applicationRoutes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'HomePage',
+    component: LandingPageInterface
   },
   {
     path: '/login',
-    name: 'Login',
-    component: Login,
+    name: 'SignIn',
+    component: AuthenticationPortal,
     beforeEnter: requireGuest
   },
   {
     path: '/register',
-    name: 'Register',
-    component: Register,
+    name: 'Registration',
+    component: UserRegistrationPortal,
     beforeEnter: requireGuest
   },
   {
     path: '/dashboard',
-    name: 'Dashboard',
-    component: Dashboard,
+    name: 'MainDashboard',
+    component: CentralDashboardInterface,
     beforeEnter: requireDashboard
   },
   {
     path: '/unauthorized',
-    name: 'Unauthorized',
-    component: Unauthorized
+    name: 'AccessDenied',
+    component: UnauthorizedAccessInterface
   },
-  
-  // Youth User Routes
+
+  // Student user interface routes
   {
     path: '/youth',
-    name: 'YouthDashboard',
-    component: YouthDashboard,
+    name: 'StudentDashboard',
+    component: YouthUserWorkspace,
     beforeEnter: requireYouthUser
   },
   {
     path: '/resources',
-    name: 'Resources',
-    component: Resources,
-    beforeEnter: requireYouthUser
-  },
-  {
-    path: '/book-appointment',
-    name: 'BookAppointment',
-    component: BookAppointment,
+    name: 'ResourceLibrary',
+    component: WellnessResourceRepository,
     beforeEnter: requireYouthUser
   },
   {
     path: '/my-appointments',
-    name: 'MyAppointments',
-    component: MyAppointments,
+    name: 'MySessionHistory',
+    component: PersonalSessionHistory,
     beforeEnter: requireYouthUser
   },
   {
     path: '/rate-counsellor/:appointmentId',
-    name: 'RateCounsellor',
+    name: 'TherapistRating',
     component: () => import('@/views/youth/RateCounsellor.vue'),
     beforeEnter: requireYouthUser
   },
   {
     path: '/location',
-    name: 'GeoLocation',
-    component: GeoLocation
-    // Public route - accessible to all users
+    name: 'WellnessLocations',
+    component: TherapeuticLocationDiscovery
+    // Publicly accessible route
   },
-  
-  // Counsellor Routes
+
+  // Therapist interface routes
   {
     path: '/counsellor',
-    name: 'CounsellorDashboard',
-    component: CounsellorDashboard,
+    name: 'TherapistDashboard',
+    component: CounsellorWorkspaceInterface,
     beforeEnter: requireCounsellor
   },
   {
     path: '/counsellor/profile',
-    name: 'CounsellorProfile',
-    component: CounsellorProfile,
+    name: 'TherapistProfile',
+    component: CounsellorProfileManagement,
     beforeEnter: requireCounsellor
   },
   {
     path: '/counsellor/appointments',
-    name: 'CounsellorAppointments',
-    component: CounsellorAppointments,
+    name: 'TherapistSessions',
+    component: CounsellorSessionManagement,
     beforeEnter: requireCounsellor
   },
   {
     path: '/counsellor/availability',
-    name: 'CounsellorAvailability',
-    component: CounsellorAvailability,
+    name: 'TherapistSchedule',
+    component: CounsellorAvailabilityManager,
     beforeEnter: requireCounsellor
   },
   {
     path: '/counsellor/ratings',
-    name: 'CounsellorRatings',
+    name: 'TherapistFeedback',
     component: () => import('@/views/counsellor/CounsellorRatings.vue'),
     beforeEnter: requireCounsellor
   },
-  
-  // Admin Routes
+
+  // Administrative interface routes
   {
     path: '/admin',
-    name: 'AdminDashboard',
-    component: AdminDashboard,
+    name: 'AdminControlPanel',
+    component: SystemAdministrationInterface,
     beforeEnter: requireAdmin
   },
   {
     path: '/admin/emails',
-    name: 'EmailManagement',
-    component: EmailManagement,
+    name: 'EmailAdministration',
+    component: CommunicationManagementSystem,
     beforeEnter: requireAdmin
   },
   {
     path: '/admin/users',
-    name: 'UserManagement',
-    component: UserManagement,
+    name: 'UserAdministration',
+    component: UserAccountManagementSystem,
     beforeEnter: requireAdmin
   },
   {
     path: '/counsellors',
-    name: 'CounsellorDirectory',
-    component: CounsellorDirectory
-    // Public route - no auth required
-  },
-  {
-    path: '/admin/users',
-    name: 'UserManagement',
-    component: UserManagement,
-    beforeEnter: requireAdmin
+    name: 'TherapistDirectory',
+    component: ProfessionalDirectoryInterface
+    // Publicly accessible route
   },
   {
     path: '/admin/content',
-    name: 'ContentManagement',
-    component: ContentManagement,
+    name: 'ContentAdministration',
+    component: ContentManagementSystem,
     beforeEnter: requireAdmin
   },
   {
     path: '/admin/settings',
-    name: 'PlatformSettings',
-    component: PlatformSettings,
+    name: 'SystemSettings',
+    component: PlatformConfigurationInterface,
     beforeEnter: requireAdmin
   },
-  
-  // Catch all route - 404
+
+  // Development test routes
+  {
+    path: '/test-form',
+    name: 'FormFieldTest',
+    component: FormFieldTestComponent
+  },
+
+  // Fallback route for unmatched paths
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
+    name: 'PageNotFound',
     component: () => import('@/views/NotFound.vue')
   }
 ]
 
-const router = createRouter({
+const applicationRouter = createRouter({
   history: createWebHistory(),
-  routes
+  routes: applicationRoutes
 })
 
-export default router
+export default applicationRouter

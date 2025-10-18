@@ -1,6 +1,9 @@
 <template>
   <div class="user-management">
     <div class="container">
+      <!-- Accessibility: Live region for announcements -->
+      <div aria-live="polite" aria-atomic="true" class="sr-only" id="user-management-announcements"></div>
+
       <div class="row">
         <div class="col s12">
           <h4>User Management</h4>
@@ -130,41 +133,78 @@
 
               <!-- Responsive Table -->
               <div class="table-container">
-                <table class="striped responsive-table">
+                <table
+                  class="striped responsive-table"
+                  role="table"
+                  aria-label="User management table"
+                  aria-describedby="table-description"
+                >
+                  <caption id="table-description" class="sr-only">
+                    Table showing {{ totalUsers }} users with sorting and filtering options.
+                    Currently showing {{ paginatedUsers.length }} users on page {{ currentPage }} of {{ totalPages }}.
+                  </caption>
                   <thead>
                     <tr>
                       <th>
-                        <a @click="sortUsers('displayName')" class="sort-header">
+                        <button
+                          type="button"
+                          @click="sortUsers('displayName')"
+                          @keydown="handleSortKeydown($event, 'displayName')"
+                          class="sort-header"
+                          :aria-label="`Sort by name ${getSortDirection('displayName')}`"
+                          :aria-sort="getSortAriaSort('displayName')"
+                        >
                           Name
-                          <i class="material-icons tiny">
+                          <i class="material-icons tiny" aria-hidden="true">
                             {{ getSortIcon('displayName') }}
                           </i>
-                        </a>
+                        </button>
                       </th>
                       <th>
-                        <a @click="sortUsers('email')" class="sort-header">
+                        <button
+                          type="button"
+                          @click="sortUsers('email')"
+                          @keydown="handleSortKeydown($event, 'email')"
+                          class="sort-header"
+                          :aria-label="`Sort by email ${getSortDirection('email')}`"
+                          :aria-sort="getSortAriaSort('email')"
+                        >
                           Email
-                          <i class="material-icons tiny">
+                          <i class="material-icons tiny" aria-hidden="true">
                             {{ getSortIcon('email') }}
                           </i>
-                        </a>
+                        </button>
                       </th>
                       <th>
-                        <a @click="sortUsers('role')" class="sort-header">
+                        <button
+                          type="button"
+                          @click="sortUsers('role')"
+                          @keydown="handleSortKeydown($event, 'role')"
+                          class="sort-header"
+                          :aria-label="`Sort by role ${getSortDirection('role')}`"
+                          :aria-sort="getSortAriaSort('role')"
+                        >
                           Role
-                          <i class="material-icons tiny">
+                          <i class="material-icons tiny" aria-hidden="true">
                             {{ getSortIcon('role') }}
                           </i>
-                        </a>
+                        </button>
                       </th>
                       <th>Status</th>
                       <th>
-                        <a @click="sortUsers('createdAt')" class="sort-header">
+                        <button
+                          type="button"
+                          @click="sortUsers('createdAt')"
+                          @keydown="handleSortKeydown($event, 'createdAt')"
+                          class="sort-header"
+                          :aria-label="`Sort by join date ${getSortDirection('createdAt')}`"
+                          :aria-sort="getSortAriaSort('createdAt')"
+                        >
                           Join Date
-                          <i class="material-icons tiny">
+                          <i class="material-icons tiny" aria-hidden="true">
                             {{ getSortIcon('createdAt') }}
                           </i>
-                        </a>
+                        </button>
                       </th>
                       <th>Last Active</th>
                       <th>Actions</th>
@@ -192,29 +232,32 @@
                       <td>{{ formatDate(user.createdAt) }}</td>
                       <td>{{ user.lastActive }}</td>
                       <td>
-                        <div class="action-buttons">
+                        <div class="action-buttons" role="group" :aria-label="`Actions for ${user.displayName || user.email}`">
                           <button
                             @click="editUser(user)"
+                            @keydown="handleActionKeydown($event, () => editUser(user))"
                             class="btn-small blue waves-effect waves-light"
-                            title="Edit User"
+                            :aria-label="`Edit user ${user.displayName || user.email}`"
                           >
-                            <i class="material-icons">edit</i>
+                            <i class="material-icons" aria-hidden="true">edit</i>
                           </button>
                           <button
                             @click="toggleUserStatus(user)"
+                            @keydown="handleActionKeydown($event, () => toggleUserStatus(user))"
                             class="btn-small orange waves-effect waves-light"
-                            :title="user.isActive ? 'Deactivate' : 'Activate'"
+                            :aria-label="`${user.isActive ? 'Deactivate' : 'Activate'} user ${user.displayName || user.email}`"
                           >
-                            <i class="material-icons">
+                            <i class="material-icons" aria-hidden="true">
                               {{ user.isActive ? 'block' : 'check_circle' }}
                             </i>
                           </button>
                           <button
                             @click="confirmDeleteUser(user)"
+                            @keydown="handleActionKeydown($event, () => confirmDeleteUser(user))"
                             class="btn-small red waves-effect waves-light"
-                            title="Delete User"
+                            :aria-label="`Delete user ${user.displayName || user.email}`"
                           >
-                            <i class="material-icons">delete</i>
+                            <i class="material-icons" aria-hidden="true">delete</i>
                           </button>
                         </div>
                       </td>
@@ -323,6 +366,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useUserManagement } from '@/composables/useUserManagement'
+import { useAccessibility } from '@/composables/useAccessibility'
 
 const {
   loading,
@@ -348,6 +392,9 @@ const {
   goToPage,
   exportUsers: exportUserData
 } = useUserManagement()
+
+// Accessibility features
+const { announce, focusElement, trapFocus } = useAccessibility()
 
 // Local state
 const selectedUser = ref(null)
@@ -425,6 +472,17 @@ const editUser = (user) => {
   selectedUser.value = { ...user }
   const modal = M.Modal.getInstance(document.getElementById('edit-user-modal'))
   modal.open()
+
+  // Focus management for modal
+  setTimeout(() => {
+    const modalElement = document.getElementById('edit-user-modal')
+    if (modalElement) {
+      trapFocus(modalElement)
+      focusElement('#edit-name')
+    }
+  }, 100)
+
+  announce(`Editing user ${user.displayName || user.email}`)
 }
 
 const saveUserChanges = async () => {
@@ -435,13 +493,16 @@ const saveUserChanges = async () => {
 
     if (result.success) {
       M.toast({ html: result.message, classes: 'green' })
+      announce(`User ${selectedUser.value.displayName || selectedUser.value.email} updated successfully`)
       const modal = M.Modal.getInstance(document.getElementById('edit-user-modal'))
       modal.close()
     } else {
       M.toast({ html: result.message, classes: 'red' })
+      announce(`Error updating user: ${result.message}`)
     }
   } catch (err) {
     M.toast({ html: 'Error updating user: ' + err.message, classes: 'red' })
+    announce(`Error updating user: ${err.message}`)
   }
 }
 
@@ -467,6 +528,17 @@ const confirmDeleteUser = (user) => {
   userToDelete.value = user
   const modal = M.Modal.getInstance(document.getElementById('delete-user-modal'))
   modal.open()
+
+  // Focus management for modal
+  setTimeout(() => {
+    const modalElement = document.getElementById('delete-user-modal')
+    if (modalElement) {
+      trapFocus(modalElement)
+      focusElement('.modal-footer .btn.red')
+    }
+  }, 100)
+
+  announce(`Confirm deletion of user ${user.displayName || user.email}`)
 }
 
 const deleteUserConfirmed = async () => {
@@ -493,12 +565,45 @@ const exportUsers = () => {
     const result = exportUserData()
     if (result.success) {
       M.toast({ html: result.message, classes: 'green' })
+      announce('User data exported successfully')
     } else {
       M.toast({ html: result.message, classes: 'red' })
+      announce(`Export failed: ${result.message}`)
     }
   } catch (err) {
     M.toast({ html: 'Error exporting users: ' + err.message, classes: 'red' })
+    announce(`Export error: ${err.message}`)
   }
+}
+
+// Accessibility: Keyboard event handlers
+const handleSortKeydown = (event, field) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    sortUsers(field)
+
+    // Announce sort change to screen readers
+    const direction = sortDirection.value === 'asc' ? 'ascending' : 'descending'
+    announce(`Table sorted by ${field} in ${direction} order`)
+  }
+}
+
+const handleActionKeydown = (event, action) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    action()
+  }
+}
+
+// Accessibility: Helper methods for ARIA attributes
+const getSortDirection = (field) => {
+  if (sortField.value !== field) return 'none'
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
+}
+
+const getSortAriaSort = (field) => {
+  if (sortField.value !== field) return 'none'
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
 }
 
 // Lifecycle
@@ -521,12 +626,30 @@ onMounted(async () => {
   padding: 2rem 0;
 }
 
+/* Accessibility: Sort header buttons */
 .sort-header {
+  background: none;
+  border: none;
   color: #26a69a;
   cursor: pointer;
   display: flex;
   align-items: center;
   text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.sort-header:hover {
+  background-color: rgba(38, 166, 154, 0.1);
+}
+
+.sort-header:focus {
+  outline: 2px solid #26a69a;
+  outline-offset: 2px;
+  background-color: rgba(38, 166, 154, 0.1);
 }
 
 .sort-header:hover {

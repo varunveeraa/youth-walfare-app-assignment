@@ -1,104 +1,104 @@
-# Youth Welfare Web Application
+# MindBridge Wellness Platform
 
-A comprehensive mental health support platform built with Vue 3, featuring counsellor booking, resource management, and location services.
+An innovative mental health support ecosystem developed with Vue 3, integrating therapeutic session management, wellness resource discovery, and location-based healing spaces.
 
-## Features
+## Core Capabilities
 
-### 🗺️ Mind Bridging Wellness Spaces (BR E.2)
-- **Wellness Space Discovery**: Find parks, community centers, gyms, and other spaces that naturally support mental health
-- **Interactive Wellness Map**: Powered by Mapbox with categorized wellness locations
-- **Mental Health Benefits**: Learn how different spaces passively improve mental wellness
-- **10 Wellness Categories**: Parks, playgrounds, community centers, fitness facilities, libraries, waterfront areas, trails, gardens, arts spaces, and spiritual centers
-- **Location-Based Wellness**: Discover nearby spaces that support your mental health journey
-- **Wellness Tips**: Get specific guidance on how to use each space for mental restoration
-- **Mind Bridging Concept**: Understand how environments naturally connect you to positive mental states
+### 🌿 Wellness Space Discovery System
+- **Therapeutic Environment Mapping**: Locate parks, community hubs, fitness centers, and healing spaces that naturally enhance mental wellbeing
+- **Dynamic Location Interface**: Mapbox-powered interactive mapping with categorized wellness destinations
+- **Wellbeing Benefits Education**: Discover how different environments passively contribute to mental health restoration
+- **Comprehensive Location Categories**: 10 distinct categories including green spaces, recreational areas, community centers, fitness venues, libraries, waterfront locations, walking paths, gardens, cultural spaces, and meditation centers
+- **Proximity-Based Wellness**: Identify nearby therapeutic environments that complement your mental health journey
+- **Environment-Specific Guidance**: Receive tailored recommendations for maximizing the therapeutic potential of each space
+- **Environmental Psychology Integration**: Learn how physical spaces naturally facilitate positive mental state transitions
 
-### 🧠 Mental Health Platform
-- User role management (Youth, Counsellor, Admin)
-- Appointment booking and management
-- Counsellor directory and ratings
-- Resource management
-- Email notifications
+### 🎯 Comprehensive Mental Health Ecosystem
+- Multi-tier user access control (Students, Therapists, Administrators)
+- Therapeutic session scheduling and coordination
+- Professional therapist directory with feedback systems
+- Curated wellness resource library
+- Automated communication systems
 
-## Recommended IDE Setup
+## Development Environment
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### Preferred IDE Configuration
+[Visual Studio Code](https://code.visualstudio.com/) with [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) extension (ensure Vetur is disabled for optimal performance).
 
-## Recommended Browser Setup
+### Browser Development Tools
+- **Chromium-based browsers** (Chrome, Edge, Brave):
+  - [Vue.js devtools extension](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+  - [Enable Custom Object Formatter](http://bit.ly/object-formatters) in DevTools
+- **Firefox**:
+  - [Vue.js devtools add-on](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
+  - [Activate Custom Object Formatter](https://fxdx.dev/firefox-devtools-custom-object-formatters/) in DevTools
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Build Configuration
 
-## Customize configuration
+Refer to [Vite Configuration Documentation](https://vite.dev/config/) for advanced customization options.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## Installation & Setup
 
-## Project Setup
+### Environment Variables Setup
 
-### Environment Configuration
-
-1. Copy the environment example file:
-```sh
+1. Create environment configuration:
+```bash
 cp .env.example .env
 ```
 
-2. Configure your Mapbox token in `.env`:
+2. Add your Mapbox access token to `.env`:
 ```env
 VITE_MAPBOX_TOKEN=pk.eyJ1IjoidmFydW52ZWVyYSIsImEiOiJjbWd0MTF6NTMzYnRpMm1vdmIxZjJhdm5mIn0.pYqPUJv1_U7db2OnHMdYPQ
 ```
 
-✅ **Token Status**: Your Mapbox token is properly configured and active! The wellness spaces feature now uses real location data from Mapbox's comprehensive database.
+✅ **Integration Status**: Mapbox token is active and configured! The wellness location discovery feature utilizes real geographic data from Mapbox's extensive location database.
 
-### Install Dependencies
+### Dependency Installation
 
-```sh
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Development Server Launch
 
-```sh
-npm run dev
+```bash
+npm run serve
 ```
 
-### Compile and Minify for Production
+### Production Build Generation
 
-```sh
+```bash
 npm run build
 ```
 
-## Usage
+## Platform Usage Guide
 
-### Accessing Mind Bridging Wellness Spaces
+### Wellness Space Discovery Navigation
 
-1. Navigate to `/location` or click "Wellness Spaces" in the navigation menu
-2. Choose from 10 wellness categories (parks, gyms, community centers, etc.)
-3. Learn about the mental health benefits of each space type
-4. Click "Find Nearby" to discover wellness spaces in your area
-5. View detailed information about how each space supports mental wellness
-6. Get specific wellness tips for making the most of each environment
+1. Access `/location` route or select "Wellness Spaces" from the main navigation
+2. Explore 10 therapeutic environment categories (nature areas, fitness facilities, community hubs, etc.)
+3. Study the mental health benefits associated with each environment type
+4. Utilize "Find Nearby" functionality to locate wellness spaces in your vicinity
+5. Access comprehensive information about how each location supports psychological wellbeing
+6. Receive environment-specific recommendations for optimizing therapeutic benefits
 
-### Wellness Categories
+### Therapeutic Environment Categories
 
-- **Parks & Green Spaces**: Nature therapy and stress reduction
-- **Playgrounds & Recreation**: Social connection and joy
-- **Community Centers**: Belonging and support networks
-- **Gyms & Fitness Centers**: Endorphin release and confidence building
-- **Libraries & Learning Spaces**: Quiet reflection and personal growth
-- **Waterfront & Beaches**: Natural tranquility and mindfulness
-- **Walking Trails & Paths**: Mindful movement and nature connection
-- **Community Gardens**: Therapeutic gardening and community building
-- **Arts & Cultural Spaces**: Creative expression and inspiration
-- **Spiritual & Meditation Spaces**: Inner peace and self-reflection
+- **Nature & Green Areas**: Environmental therapy and stress mitigation
+- **Recreation & Play Spaces**: Social engagement and emotional uplift
+- **Community Gathering Places**: Belonging cultivation and peer support
+- **Fitness & Movement Centers**: Endorphin activation and self-efficacy building
+- **Learning & Quiet Spaces**: Contemplative practice and personal development
+- **Waterfront & Coastal Areas**: Natural serenity and mindfulness cultivation
+- **Pathways & Trail Systems**: Meditative movement and nature immersion
+- **Gardening & Growing Spaces**: Horticultural therapy and community connection
+- **Creative & Cultural Venues**: Artistic expression and inspiration
+- **Contemplative & Sacred Spaces**: Inner tranquility and spiritual reflection
 
-## Technology Stack
+## Technical Architecture
 
-- **Frontend**: Vue 3, Vue Router, Materialize CSS
-- **Maps**: Mapbox GL JS, Mapbox Geocoding API, Mapbox Directions API
-- **Backend**: Firebase (Firestore, Authentication, Cloud Functions)
-- **Build Tool**: Vite
-- **Deployment**: Firebase Hosting
+- **Client-Side Framework**: Vue 3, Vue Router, Materialize CSS
+- **Mapping Services**: Mapbox GL JS, Mapbox Geocoding API, Mapbox Directions API
+- **Backend Infrastructure**: Firebase (Firestore, Authentication, Cloud Functions)
+- **Development Tooling**: Vite
+- **Hosting Platform**: Firebase Hosting

@@ -1,36 +1,36 @@
 <template>
   <FormCard
-    title="Join MindBridge"
-    subtitle="Create your account to get started"
-    icon="person_add"
-    :error="authError"
-    :loading="loading"
-    submit-text="Create Account"
-    submit-icon="person_add"
-    loading-text="Creating Account..."
-    @submit="handleRegister"
+    card-title="Join MindBridge"
+    card-subheading="Create your account to begin your journey"
+    header-icon="person_add"
+    :system-notification="authError"
+    :operation-active="loading"
+    submit-label="Create Account"
+    submit-icon-symbol="person_add"
+    loading-label="Setting up account..."
+    @submit="processRegistration"
   >
     <div class="row">
       <div class="col s12 m6">
         <FormField
-          id="displayName"
-          label="Full Name"
-          icon="person"
-          v-model="form.displayName"
-          :error="errors.displayName"
-          required
+          element-identifier="displayName"
+          label-text="Full Name"
+          icon-symbol="person"
+          v-model="registrationForm.displayName"
+          :error-message="validationErrors.displayName"
+          mandatory-field
         />
       </div>
 
       <div class="col s12 m6">
         <FormField
-          id="email"
-          label="Email"
-          type="email"
-          icon="email"
-          v-model="form.email"
-          :error="errors.email"
-          required
+          element-identifier="email"
+          label-text="Email Address"
+          input-category="email"
+          icon-symbol="email"
+          v-model="registrationForm.email"
+          :error-message="validationErrors.email"
+          mandatory-field
         />
       </div>
     </div>
@@ -38,25 +38,25 @@
     <div class="row">
       <div class="col s12 m6">
         <FormField
-          id="password"
-          label="Password"
-          type="password"
-          icon="lock"
-          v-model="form.password"
-          :error="errors.password"
-          required
+          element-identifier="password"
+          label-text="Password"
+          input-category="password"
+          icon-symbol="lock"
+          v-model="registrationForm.password"
+          :error-message="validationErrors.password"
+          mandatory-field
         />
       </div>
 
       <div class="col s12 m6">
         <FormField
-          id="confirmPassword"
-          label="Confirm Password"
-          type="password"
-          icon="lock_outline"
-          v-model="form.confirmPassword"
-          :error="errors.confirmPassword"
-          required
+          element-identifier="confirmPassword"
+          label-text="Confirm Password"
+          input-category="password"
+          icon-symbol="lock_outline"
+          v-model="registrationForm.confirmPassword"
+          :error-message="validationErrors.confirmPassword"
+          mandatory-field
         />
       </div>
     </div>
@@ -64,57 +64,57 @@
     <div class="row">
       <div class="col s12 m6">
         <FormField
-          id="age"
-          label="Age"
-          type="number"
-          icon="cake"
-          v-model="form.age"
-          :error="errors.age"
-          required
+          element-identifier="age"
+          label-text="Age"
+          input-category="number"
+          icon-symbol="cake"
+          v-model="registrationForm.age"
+          :error-message="validationErrors.age"
+          mandatory-field
         />
       </div>
 
       <div class="col s12 m6">
-        <div class="input-field">
-          <i class="material-icons prefix">assignment_ind</i>
-          <select v-model="form.role" :class="{ invalid: errors.role }" required>
-            <option value="" disabled>Choose your role</option>
+        <div class="field-container">
+          <i class="material-icons field-prefix">assignment_ind</i>
+          <select v-model="registrationForm.role" :class="{ invalid: validationErrors.role }" required>
+            <option value="" disabled>Select your role</option>
             <option value="youth">Youth User</option>
             <option value="counsellor">Counsellor</option>
           </select>
-          <label>I am a...</label>
-          <span v-if="errors.role" class="helper-text error-text">
-            {{ errors.role }}
+          <label>Account Type</label>
+          <span v-if="validationErrors.role" class="helper-text validation-error">
+            {{ validationErrors.role }}
           </span>
         </div>
       </div>
     </div>
 
-    <!-- Terms and Conditions -->
-    <p>
+    <!-- Agreement Section -->
+    <p class="terms-section">
       <label>
-        <input type="checkbox" v-model="form.agreeToTerms" />
+        <input type="checkbox" v-model="registrationForm.agreeToTerms" />
         <span>
-          I agree to the
+          I accept the
           <a href="#" class="teal-text">Terms of Service</a>
           and
           <a href="#" class="teal-text">Privacy Policy</a>
         </span>
       </label>
     </p>
-    <span v-if="errors.agreeToTerms" class="error-text">
-      {{ errors.agreeToTerms }}
+    <span v-if="validationErrors.agreeToTerms" class="validation-error">
+      {{ validationErrors.agreeToTerms }}
     </span>
 
-    <!-- Test Button (for debugging) -->
+    <!-- Connection Test (development) -->
     <div class="center-align" style="margin-bottom: 1rem;">
       <button
-        @click="testFirebaseConnection"
+        @click="verifyFirebaseConnection"
         type="button"
         class="btn waves-effect waves-light blue"
       >
-        <i class="material-icons left">cloud</i>
-        Test Firebase Connection
+        <i class="material-icons left">cloud_done</i>
+        Verify Connection
       </button>
     </div>
 
@@ -139,7 +139,7 @@ import FormField from '@/components/form/FormField.vue'
 const router = useRouter()
 const { register, loading, error: authError, clearError } = useAuth()
 
-const form = reactive({
+const registrationForm = reactive({
   displayName: '',
   email: '',
   password: '',
@@ -149,7 +149,7 @@ const form = reactive({
   agreeToTerms: false
 })
 
-const { errors, validateForm } = useFormValidation(form, {
+const { errors: validationErrors, validateForm: performValidation } = useFormValidation(registrationForm, {
   displayName: commonRules.name,
   email: commonRules.email,
   password: commonRules.password,
@@ -157,119 +157,125 @@ const { errors, validateForm } = useFormValidation(form, {
   age: commonRules.age,
   role: commonRules.required('Role'),
   agreeToTerms: [{
-    validator: (value) => value ? null : 'You must agree to the terms and conditions',
-    message: 'You must agree to the terms and conditions'
+    validator: (value) => value ? null : 'You must accept the terms and conditions to proceed',
+    message: 'You must accept the terms and conditions to proceed'
   }]
 })
 
-
-
-const testFirebaseConnection = async () => {
+const verifyFirebaseConnection = async () => {
   try {
-    console.log('Testing Firebase connection...')
+    console.log('Verifying Firebase connection...')
 
-    // Test Firebase Auth
+    // Check Firebase Auth
     console.log('Firebase Auth instance:', auth)
     console.log('Firebase Auth current user:', auth.currentUser)
 
-    // Test Firestore
+    // Check Firestore
     console.log('Firestore instance:', db)
 
-    alert('Firebase connection test completed. Check console for details.')
+    alert('Firebase connection verification completed. Check console for details.')
   } catch (error) {
-    console.error('Firebase connection test failed:', error)
-    alert('Firebase connection test failed. Check console for details.')
+    console.error('Firebase connection verification failed:', error)
+    alert('Firebase connection verification failed. Check console for details.')
   }
 }
 
-const handleRegister = async () => {
+const processRegistration = async () => {
   clearError()
 
-  if (!validateForm()) {
+  if (!performValidation()) {
     return
   }
 
   try {
-    const userData = {
-      displayName: form.displayName,
-      age: parseInt(form.age),
-      role: form.role
+    const userProfile = {
+      displayName: registrationForm.displayName,
+      age: parseInt(registrationForm.age),
+      role: registrationForm.role
     }
 
-    const result = await register(form.email, form.password, userData)
+    const registrationResult = await register(registrationForm.email, registrationForm.password, userProfile)
 
-    // Welcome email will be sent automatically via Cloud Functions
-    if (result && result.user) {
-      console.log('User registered successfully - welcome email will be sent automatically')
+    // Automated welcome email via Cloud Functions
+    if (registrationResult && registrationResult.user) {
+      console.log('Account created successfully - welcome email will be sent automatically')
     }
 
-    // Redirect to dashboard after successful registration
+    // Navigate to dashboard after successful account creation
     router.push('/dashboard')
   } catch (error) {
-    console.error('Registration error:', error)
-    // Error is handled by the useAuth composable
+    console.error('Account creation failed:', error)
+    // Error handling managed by useAuth composable
   }
 }
 
 onMounted(() => {
-  // Initialize Materialize select
+  // Initialize Materialize components
   if (typeof M !== 'undefined') {
     setTimeout(() => {
+      // Initialize select components
       M.FormSelect.init(document.querySelectorAll('select'))
-    }, 100)
+
+      // Initialize text fields
+      M.updateTextFields()
+
+      // Initialize character counters
+      M.CharacterCounter.init(document.querySelectorAll('input[data-length]'))
+    }, 150)
   }
 })
 </script>
 
 <style scoped>
-.register {
-  min-height: 80vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 2rem 0;
+.terms-section {
+  margin: 1.5rem 0;
 }
 
-.card-panel {
-  padding: 2rem;
-  border-radius: 8px;
+.terms-section label {
+  display: flex;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.4;
 }
 
-.material-icons.large {
-  font-size: 4rem;
+.terms-section input[type="checkbox"] {
+  margin-right: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.field-container {
+  position: relative;
   margin-bottom: 1rem;
 }
 
-.password-toggle {
-  cursor: pointer;
+.field-prefix {
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
   padding: 1rem;
+  color: #9e9e9e;
 }
 
-.input-field {
-  position: relative;
-}
-
-.suffix {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.error-text {
+.validation-error {
   color: #f44336 !important;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: block;
+  margin-top: 0.5rem;
 }
 
-.btn-large {
-  width: 100%;
-  margin-top: 1rem;
+select {
+  padding-left: 3rem !important;
 }
 
 @media only screen and (max-width: 600px) {
-  .card-panel {
-    margin: 1rem 0.5rem;
-    padding: 1.5rem;
+  .terms-section {
+    margin: 1rem 0;
+  }
+
+  .terms-section label {
+    font-size: 0.9rem;
   }
 }
 </style>

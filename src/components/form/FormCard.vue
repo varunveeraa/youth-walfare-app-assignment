@@ -1,47 +1,47 @@
 <template>
-  <div class="center-content">
+  <div class="form-container-wrapper">
     <div class="container">
       <div class="row">
         <div class="col s12 m8 offset-m2 l6 offset-l3">
-          <div class="card-panel">
-            <!-- Header -->
-            <div class="center-align">
-              <i v-if="icon" class="material-icons large teal-text">{{ icon }}</i>
-              <h4>{{ title }}</h4>
-              <p v-if="subtitle" class="grey-text">{{ subtitle }}</p>
+          <div class="form-card-panel">
+            <!-- Header Section -->
+            <div class="form-header center-align" @mouseenter="handleCardHover" @mouseleave="handleCardLeave">
+              <i v-if="headerIcon" class="material-icons large teal-text">{{ headerIcon }}</i>
+              <h4 class="form-title">{{ cardTitle }}</h4>
+              <p v-if="cardSubheading" class="grey-text form-subtitle">{{ cardSubheading }}</p>
             </div>
-            
-            <!-- Form Content -->
-            <form @submit.prevent="$emit('submit')">
+
+            <!-- Main Form Area -->
+            <form @submit.prevent="emitEvents('submit')" class="form-content">
               <slot />
-              
-              <!-- Error Message -->
-              <div v-if="error" class="card-panel red lighten-4 red-text text-darken-2">
-                <i class="material-icons left">error</i>
-                {{ error }}
+
+              <!-- Error Display -->
+              <div v-if="systemNotification" class="error-notification card-panel red lighten-4 red-text text-darken-2">
+                <i class="material-icons left">error_outline</i>
+                {{ systemNotification }}
               </div>
-              
-              <!-- Submit Button -->
-              <div class="center-align">
-                <button 
-                  type="submit" 
-                  class="btn-large waves-effect waves-light teal"
-                  :disabled="loading"
+
+              <!-- Action Button -->
+              <div class="form-actions center-align">
+                <button
+                  type="submit"
+                  class="btn-large waves-effect waves-light teal form-submit-btn"
+                  :disabled="operationActive"
                 >
-                  <span v-if="loading">
+                  <span v-if="operationActive">
                     <i class="material-icons left">hourglass_empty</i>
-                    {{ loadingText }}
+                    {{ loadingLabel }}
                   </span>
                   <span v-else>
-                    <i v-if="submitIcon" class="material-icons left">{{ submitIcon }}</i>
-                    {{ submitText }}
+                    <i v-if="submitIconSymbol" class="material-icons left">{{ submitIconSymbol }}</i>
+                    {{ submitLabel }}
                   </span>
                 </button>
               </div>
             </form>
-            
-            <!-- Footer Links -->
-            <div v-if="$slots.footer" class="center-align" style="margin-top: 2rem;">
+
+            <!-- Additional Links -->
+            <div v-if="$slots.footer" class="form-footer center-align">
               <slot name="footer" />
             </div>
           </div>
@@ -52,45 +52,102 @@
 </template>
 
 <script setup>
-defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: null },
-  icon: { type: String, default: null },
-  error: { type: String, default: null },
-  loading: { type: Boolean, default: false },
-  submitText: { type: String, required: true },
-  submitIcon: { type: String, default: null },
-  loadingText: { type: String, default: 'Loading...' }
+import { computed, ref } from 'vue'
+
+const props = defineProps({
+  cardTitle: { type: String, required: true },
+  cardSubheading: { type: String, default: null },
+  headerIcon: { type: String, default: null },
+  systemNotification: { type: String, default: null },
+  operationActive: { type: Boolean, default: false },
+  submitLabel: { type: String, required: true },
+  submitIconSymbol: { type: String, default: null },
+  loadingLabel: { type: String, default: 'Processing...' }
 })
 
-defineEmits(['submit'])
+const emitEvents = defineEmits(['submit'])
+
+const cardInteractionState = ref('idle')
+
+const dynamicSubmitText = computed(() => {
+  return props.operationActive ? props.loadingLabel : props.submitLabel
+})
+
+const dynamicSubmitIcon = computed(() => {
+  return props.operationActive ? 'hourglass_empty' : props.submitIconSymbol
+})
+
+const handleCardHover = () => {
+  cardInteractionState.value = 'hover'
+}
+
+const handleCardLeave = () => {
+  cardInteractionState.value = 'idle'
+}
 </script>
 
 <style scoped>
-.center-content {
+.form-container-wrapper {
   min-height: 80vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.card-panel {
-  padding: 2rem;
-  border-radius: 8px;
+.form-card-panel {
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.form-header {
+  margin-bottom: 2rem;
+}
+
+.form-title {
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 500;
+}
+
+.form-subtitle {
+  margin-bottom: 0;
+  font-size: 1.1rem;
 }
 
 .material-icons.large {
-  font-size: 4rem;
+  font-size: 4.5rem;
   margin-bottom: 1rem;
+  opacity: 0.8;
 }
 
-.btn-large {
+.form-submit-btn {
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.form-footer {
+  margin-top: 2.5rem;
+}
+
+.error-notification {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 @media only screen and (max-width: 600px) {
-  .card-panel {
+  .form-card-panel {
     margin: 1rem 0.5rem;
-    padding: 1.5rem;
+    padding: 2rem;
+  }
+
+  .form-title {
+    font-size: 1.8rem;
   }
 }
 </style>

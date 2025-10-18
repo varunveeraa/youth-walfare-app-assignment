@@ -1,25 +1,31 @@
 /**
- * MindBridge Cloud Functions (1st Generation)
- * Serverless functions for user role assignment and email notifications
+ * Youth Welfare Cloud Functions - Essential Email Functionality
  */
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-
-// SendGrid for email notifications
 const sgMail = require("@sendgrid/mail");
 
 // Initialize Firebase Admin
 admin.initializeApp();
 
-// Set SendGrid API key
-const apiKey = "SG.cCaOKMCMRLKcRFAGv0FaUA." +
-  "KgEJjE7Dhl_70sRkO5lXx0GqZ4tmiPEdQm3xufLltig";
-sgMail.setApiKey(apiKey);
+// SendGrid Configuration
+const config = functions.config();
+const sendGridApiKey = config.sendgrid && config.sendgrid.api_key;
+const senderEmail = config.sendgrid && config.sendgrid.sender_email ||
+  "noreply@example.com";
+const senderName = config.sendgrid && config.sendgrid.sender_name ||
+  "Youth Welfare Support";
+
+if (sendGridApiKey) {
+  sgMail.setApiKey(sendGridApiKey);
+  console.log(`✅ Email configured with sender: ${senderEmail}`);
+} else {
+  console.warn("❌ SendGrid API key not configured.");
+}
 
 /**
- * Cloud Function: Automatic Role Assignment on User Registration
- * Triggers when a new user document is created in Firestore
+ * Essential: User Registration with Role Assignment and Welcome Email
  */
 exports.assignUserRole = functions.firestore
     .document("users/{userId}")
@@ -27,20 +33,16 @@ exports.assignUserRole = functions.firestore
       const userData = snap.data();
       const userId = context.params.userId;
 
-      console.log(`Processing role assignment for user: ${userId}`);
-
       try {
-        // Default role assignment logic
+        // Simple role assignment
         let assignedRole = userData.role || "youth";
-
-        // Business logic for role assignment
-        if (userData.email && userData.email.includes("@mindbridge.admin")) {
+        if (userData.email && userData.email.includes("@admin")) {
           assignedRole = "admin";
-        } else if (userData.isProfessional || userData.qualifications) {
+        } else if (userData.isProfessional) {
           assignedRole = "counsellor";
         }
 
-        // Update user document with assigned role
+        // Update user with role
         await admin.firestore()
             .collection("users")
             .doc(userId)
@@ -48,163 +50,73 @@ exports.assignUserRole = functions.firestore
               role: assignedRole,
               isActive: true,
               roleAssignedAt: new Date(),
-              roleAssignedBy: "system",
             });
 
-        // Set custom claims for role-based access
+        // Set auth claims
         await admin.auth().setCustomUserClaims(userId, {
           role: assignedRole,
-          isActive: true,
         });
 
         console.log(`Role '${assignedRole}' assigned to user ${userId}`);
 
-        // If counsellor, create initial profile
-        if (assignedRole === "counsellor") {
-          await createCounsellorProfile(userId, userData);
-        }
-
-        // Send welcome email (don't fail if email fails)
-        try {
-          await sendWelcomeEmail(
-              userData.email,
-              userData.displayName,
-              assignedRole,
-          );
+        // Send welcome email
+        if (sendGridApiKey && userData.email) {
+          await sendWelcomeEmail(userData.email, userData.displayName,
+              assignedRole);
           console.log(`Welcome email sent to user ${userId}`);
-        } catch (emailError) {
-          console.error(`Failed to send welcome email to ${userId}:`,
-              emailError);
-          // Don't fail the entire function if email fails
         }
 
         return {success: true, role: assignedRole};
       } catch (error) {
-        console.error(`Error assigning role to user ${userId}:`, error);
-
-        // Update user document with error status
-        await admin.firestore()
-            .collection("users")
-            .doc(userId)
-            .update({
-              roleAssignmentError: error.message,
-              roleAssignmentErrorAt: new Date(),
-            });
-
+        console.error(`Error processing user ${userId}:`, error);
         throw error;
       }
     });
 
 /**
- * Helper function to create initial counsellor profile
- * @param {string} userId - The user ID
- * @param {object} userData - The user data
- * @return {Promise} Promise that resolves when profile is created
- */
-async function createCounsellorProfile(userId, userData) {
-  try {
-    const counsellorProfile = {
-      userId: userId,
-      name: userData.displayName || userData.name || "New Counsellor",
-      email: userData.email,
-      bio: "Professional counsellor ready to help you.",
-      specialties: ["General Counseling"],
-      qualifications: userData.qualifications || "Licensed Professional",
-      experience: userData.experience || "1",
-      languages: ["English"],
-      isActive: true,
-      isVerified: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await admin.firestore()
-        .collection("counsellorProfiles")
-        .doc(userId)
-        .set(counsellorProfile);
-
-    console.log(`Created counsellor profile for user ${userId}`);
-  } catch (error) {
-    const msg = `Error creating counsellor profile for user ${userId}:`;
-    console.error(msg, error);
-    throw error;
-  }
-}
-
-/**
- * Helper function to send welcome email to new users
- * @param {string} userEmail - The user's email address
- * @param {string} userName - The user's display name
- * @param {string} userRole - The user's assigned role
- * @return {Promise} Promise that resolves when email is sent
+ * Essential: Send welcome email to new users
+ * @param {string} userEmail - User email address
+ * @param {string} userName - User display name
+ * @param {string} userRole - User role
  */
 async function sendWelcomeEmail(userEmail, userName, userRole) {
-  try {
-    const roleSpecificContent = {
-      youth: "As a youth user, you can access mental health resources, " +
-        "book counselling sessions, and connect with professional support.",
-      counsellor: "As a counsellor, you can manage your profile, " +
-        "set availability, and help young people on their journey.",
-      admin: "As an admin, you have access to platform management tools " +
-        "and user oversight capabilities.",
-    };
+  if (!sendGridApiKey) return;
 
+  try {
     const msg = {
       to: userEmail,
-      from: {
-        email: "noreply@mindbridge.app",
-        name: "MindBridge Support",
-      },
-      subject: "Welcome to MindBridge - Your Mental Health Journey Starts Here",
-      text: `Welcome to MindBridge, ${userName || "there"}!
-
-Thank you for joining our mental health support platform.
-
-${roleSpecificContent[userRole] || "Welcome to our platform!"}
-
-Getting Started:
-- Complete your profile
-- Explore our mental health resources
-- Connect with our supportive community
-
-Best regards,
-The MindBridge Team`,
-      html: `<h1>Welcome to MindBridge!</h1>
-<p>Hello ${userName || "there"},</p>
-<p>Thank you for joining our mental health support platform.</p>
-<p>${roleSpecificContent[userRole] || "Welcome to our platform!"}</p>
-<h3>Getting Started:</h3>
-<ul>
-  <li>Complete your profile</li>
-  <li>Explore our mental health resources</li>
-  <li>Connect with our supportive community</li>
-</ul>
-<p>Best regards,<br>The MindBridge Team</p>`,
+      from: {email: senderEmail, name: senderName},
+      subject: "Welcome to Youth Welfare Platform",
+      text: `Welcome ${userName || "there"}! Your ${userRole} account ` +
+        `is ready.`,
+      html: `<h2>Welcome to Youth Welfare Platform!</h2>
+        <p>Hello ${userName || "there"},</p>
+        <p>Your account has been created with <strong>${userRole}</strong>
+        access.</p>
+        <p>You can now log in and start using the platform.</p>
+        <p>Best regards,<br>Youth Welfare Team</p>`,
     };
 
     await sgMail.send(msg);
-    console.log(`Welcome email sent successfully to: ${userEmail}`);
-    return {success: true, message: "Welcome email sent"};
+    console.log(`Welcome email sent to: ${userEmail}`);
   } catch (error) {
-    console.error(`Error sending welcome email to ${userEmail}:`, error);
-    return {success: false, message: error.message};
+    console.error(`Failed to send welcome email:`, error);
   }
 }
 
 /**
- * Cloud Function: Email Notification on Appointment Booking
- * Triggers when a new appointment is created
+ * Essential: Send appointment confirmation emails
  */
 exports.sendAppointmentNotification = functions.firestore
     .document("appointments/{appointmentId}")
     .onCreate(async (snap, context) => {
+      if (!sendGridApiKey) return;
+
       const appointmentData = snap.data();
       const appointmentId = context.params.appointmentId;
 
-      console.log(`Processing appointment notification: ${appointmentId}`);
-
       try {
-        // Get user and counsellor information
+        // Get user and counsellor info
         const [userDoc, counsellorDoc] = await Promise.all([
           admin.firestore().collection("users")
               .doc(appointmentData.userId).get(),
@@ -215,113 +127,49 @@ exports.sendAppointmentNotification = functions.firestore
         const userData = userDoc.data();
         const counsellorData = counsellorDoc.data();
 
-        // Get counsellor profile for additional info
-        const counsellorProfileDoc = await admin.firestore()
-            .collection("counsellorProfiles")
-            .doc(appointmentData.counsellorId)
-            .get();
+        // Send confirmation to user
+        await sendAppointmentEmail(appointmentData, userData, "confirmation");
+        // Send notification to counsellor
+        await sendAppointmentEmail(appointmentData, counsellorData,
+            "notification");
 
-        const counsellorProfile = counsellorProfileDoc.data();
-
-        // Send emails
-        await sendAppointmentConfirmationEmail(
-            appointmentData, userData, counsellorProfile);
-        await sendNewAppointmentNotificationEmail(
-            appointmentData, counsellorData, userData);
-
-        console.log(`Sent appointment notifications for ${appointmentId}`);
-
-        return {success: true};
+        console.log(`Appointment emails sent for ${appointmentId}`);
       } catch (error) {
-        const msg = `Error sending notifications for ${appointmentId}:`;
-        console.error(msg, error);
-        throw error;
+        console.error(`Error sending appointment emails:`, error);
       }
     });
 
 /**
- * Helper function to send appointment confirmation email to user
- * @param {object} appointment - The appointment data
- * @param {object} user - The user data
- * @param {object} counsellor - The counsellor data
- * @return {Promise} Promise that resolves when email is sent
+ * Essential: Send appointment emails
+ * @param {object} appointment - Appointment data
+ * @param {object} user - User data
+ * @param {string} type - Email type
  */
-async function sendAppointmentConfirmationEmail(appointment, user, counsellor) {
-  const appointmentDate = new Date(appointment.date.seconds * 1000);
-  const counsellorName = counsellor && counsellor.name ||
-    "Professional Counsellor";
+async function sendAppointmentEmail(appointment, user, type) {
+  if (!sendGridApiKey) return;
 
-  const msg = {
-    to: user.email,
-    from: "mindbridge@example.com",
-    subject: "Appointment Confirmation - MindBridge",
-    text: `
-      Appointment Confirmed!
+  try {
+    const isConfirmation = type === "confirmation";
+    const subject = isConfirmation ?
+      "Appointment Confirmation" : "New Appointment Booked";
 
-      Dear ${user.displayName || "User"},
+    const msg = {
+      to: user.email,
+      from: {email: senderEmail, name: senderName},
+      subject: subject,
+      text: `${subject}! Your appointment on ${appointment.date} at ` +
+        `${appointment.time}.`,
+      html: `<h2>${subject}</h2>
+        <p>Hello ${user.displayName || "there"},</p>
+        <p><strong>Date:</strong> ${appointment.date}</p>
+        <p><strong>Time:</strong> ${appointment.time}</p>
+        <p><strong>Type:</strong> ${appointment.type || "Counselling"}</p>
+        <p>Best regards,<br>Youth Welfare Team</p>`,
+    };
 
-      Your appointment has been successfully booked:
-
-      Counsellor: ${counsellorName}
-      Date: ${appointmentDate.toLocaleDateString()}
-      Time: ${appointment.time}
-      Type: ${appointment.type || "Counselling Session"}
-      Duration: ${appointment.duration || "50"} minutes
-
-      Please arrive early. Contact us 24 hours in advance for changes.
-
-      Best regards,
-      The MindBridge Team
-    `,
-  };
-
-  await sgMail.send(msg);
-  console.log(`Appointment confirmation email sent to ${user.email}`);
+    await sgMail.send(msg);
+    console.log(`Appointment ${type} email sent to: ${user.email}`);
+  } catch (error) {
+    console.error(`Failed to send appointment email:`, error);
+  }
 }
-
-/**
- * Helper function to send new appointment notification to counsellor
- * @param {object} appointment - The appointment data
- * @param {object} counsellor - The counsellor data
- * @param {object} user - The user data
- * @return {Promise} Promise that resolves when email is sent
- */
-async function sendNewAppointmentNotificationEmail(
-    appointment, counsellor, user) {
-  const appointmentDate = new Date(appointment.date.seconds * 1000);
-
-  const msg = {
-    to: counsellor.email,
-    from: "mindbridge@example.com",
-    subject: "New Appointment Booked - MindBridge",
-    text: `
-      New Appointment Booked
-
-      Dear ${counsellor.displayName || "Counsellor"},
-
-      A new appointment has been booked with you:
-
-      Client: ${user.displayName || "Client"}
-      Date: ${appointmentDate.toLocaleDateString()}
-      Time: ${appointment.time}
-      Type: ${appointment.type || "Counselling Session"}
-      Duration: ${appointment.duration || "50"} minutes
-      Notes: ${appointment.notes || "No additional notes"}
-
-      Please prepare for the session.
-
-      Best regards,
-      The MindBridge Team
-    `,
-  };
-
-  await sgMail.send(msg);
-  console.log(`New appointment notification sent to ${counsellor.email}`);
-}
-
-/**
- * Simple test function
- */
-exports.helloWorld = functions.https.onRequest((_, response) => {
-  response.send("Hello from MindBridge Cloud Functions!");
-});

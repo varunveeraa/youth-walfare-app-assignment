@@ -1,222 +1,226 @@
-import { ref, computed, onMounted } from 'vue'
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  updateProfile
+import { ref, computed } from 'vue'
+import {
+  createUserWithEmailAndPassword as establishUserCredentials,
+  signInWithEmailAndPassword as validateUserCredentials,
+  signOut as terminateUserSession,
+  onAuthStateChanged as monitorAuthenticationChanges,
+  updateProfile as modifyUserProfile
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { auth, db } from '@/firebase/config'
 
-// Global state for authentication
-const user = ref(null)
-const loading = ref(true)
-const error = ref(null)
+// Global authentication state repository
+const authenticatedUserData = ref(null)
+const operationInProgress = ref(true)
+const systemErrorNotification = ref(null)
 
 export const useAuth = () => {
-  // Computed properties
-  const isAuthenticated = computed(() => !!user.value)
-  const userRole = computed(() => user.value?.role || null)
-  const isYouthUser = computed(() => userRole.value === 'youth')
-  const isCounsellor = computed(() => userRole.value === 'counsellor')
-  const isAdmin = computed(() => userRole.value === 'admin')
+  // Session validation computations
+  const userSessionActive = computed(() => {
+    const isActive = !!authenticatedUserData.value
+    console.log('userSessionActive computed:', isActive, 'user:', authenticatedUserData.value)
+    return isActive
+  })
+  const extractUserRole = computed(() => authenticatedUserData.value?.role || null)
+  const isYouthUserType = computed(() => extractUserRole.value === 'youth')
+  const isCounsellorUserType = computed(() => extractUserRole.value === 'counsellor')
+  const isAdministratorType = computed(() => extractUserRole.value === 'admin')
 
-  // Clear error function
-  const clearError = () => {
-    error.value = null
+  // Clear system notifications
+  const clearSystemNotifications = () => {
+    systemErrorNotification.value = null
   }
 
-  // Register new user
-  const register = async (email, password, userData) => {
+  // Establish new user registration
+  const establishNewUserAccount = async (emailAddress, userPassword, userMetadata) => {
     try {
-      loading.value = true
-      error.value = null
+      operationInProgress.value = true
+      systemErrorNotification.value = null
 
-      console.log('Starting registration process...', { email, userData })
+      console.log('Commencing user registration process...', { emailAddress, userMetadata })
 
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      const firebaseUser = userCredential.user
+      // Generate authentication credentials
+      const registrationOutcome = await establishUserCredentials(auth, emailAddress, userPassword)
+      const registeredUser = registrationOutcome.user
 
-      console.log('Firebase user created successfully:', firebaseUser.uid)
+      console.log('Authentication credentials established:', registeredUser.uid)
 
-      // Update display name
-      await updateProfile(firebaseUser, {
-        displayName: userData.displayName
+      // Configure user profile attributes
+      await modifyUserProfile(registeredUser, {
+        displayName: userMetadata.displayName
       })
 
-      console.log('Display name updated successfully')
+      console.log('User profile attributes configured')
 
-      // Create user document in Firestore
-      const userDoc = {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: userData.displayName,
-        role: userData.role || 'youth',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        ...userData
+      // Persist user information to database
+      const userDocumentData = {
+        uid: registeredUser.uid,
+        email: registeredUser.email,
+        displayName: userMetadata.displayName,
+        role: userMetadata.role || 'youth',
+        accountCreated: new Date(),
+        lastModified: new Date(),
+        ...userMetadata
       }
 
-      console.log('Creating user document in Firestore...', userDoc)
+      console.log('Persisting user data to database...', userDocumentData)
 
-      await setDoc(doc(db, 'users', firebaseUser.uid), userDoc)
+      await setDoc(doc(db, 'users', registeredUser.uid), userDocumentData)
 
-      console.log('User document created successfully in Firestore')
+      console.log('User data persistence completed')
 
-      return userCredential
-    } catch (err) {
-      console.error('Registration error details:', {
-        code: err.code,
-        message: err.message,
-        stack: err.stack
+      return registrationOutcome
+    } catch (registrationError) {
+      console.error('User registration process failed:', {
+        errorCode: registrationError.code,
+        errorMessage: registrationError.message,
+        errorStack: registrationError.stack
       })
 
-      // Provide user-friendly error messages
-      let userFriendlyMessage = err.message
+      // Convert technical error codes to user-comprehensible messages
+      let userFriendlyNotification = registrationError.message
 
-      switch (err.code) {
+      switch (registrationError.code) {
         case 'auth/email-already-in-use':
-          userFriendlyMessage = 'This email address is already registered. Please use a different email or try logging in.'
+          userFriendlyNotification = 'This email address is already associated with an existing account. Please use the sign-in option or try a different email.'
           break
         case 'auth/invalid-email':
-          userFriendlyMessage = 'Please enter a valid email address.'
+          userFriendlyNotification = 'The provided email address format is not valid. Please verify and try again.'
           break
         case 'auth/weak-password':
-          userFriendlyMessage = 'Password is too weak. Please choose a stronger password.'
+          userFriendlyNotification = 'The password strength is insufficient. Please create a password with at least 6 characters.'
           break
         case 'permission-denied':
-          userFriendlyMessage = 'Permission denied. Please check your internet connection and try again.'
+          userFriendlyNotification = 'System access denied. Please check your internet connectivity and attempt again.'
           break
         case 'auth/network-request-failed':
-          userFriendlyMessage = 'Network error. Please check your internet connection and try again.'
+          userFriendlyNotification = 'Network connectivity issue detected. Please verify your connection and retry.'
           break
         default:
-          if (err.message.includes('Missing or insufficient permissions')) {
-            userFriendlyMessage = 'Database permission error. Please try again in a moment.'
+          if (registrationError.message.includes('Missing or insufficient permissions')) {
+            userFriendlyNotification = 'Database connectivity issue. Please wait briefly and attempt again.'
           }
       }
 
-      error.value = userFriendlyMessage
-      throw err
+      systemErrorNotification.value = userFriendlyNotification
+      throw registrationError
     } finally {
-      loading.value = false
+      operationInProgress.value = false
     }
   }
 
-  // Login user
-  const login = async (email, password) => {
+  // Perform user credential validation
+  const performUserAuthentication = async (emailAddress, userPassword) => {
     try {
-      loading.value = true
-      error.value = null
+      operationInProgress.value = true
+      systemErrorNotification.value = null
 
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const authenticationResult = await validateUserCredentials(auth, emailAddress, userPassword)
 
-      // Wait for auth state to be updated
+      // Synchronize authentication state properly
       await new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-          if (firebaseUser && user.value) {
-            unsubscribe()
+        const authStateListener = monitorAuthenticationChanges(auth, (verifiedUser) => {
+          if (verifiedUser && authenticatedUserData.value) {
+            authStateListener()
             resolve()
           }
         })
       })
 
-      return userCredential
-    } catch (err) {
-      error.value = err.message
-      throw err
+      return authenticationResult
+    } catch (authError) {
+      systemErrorNotification.value = authError.message
+      throw authError
     } finally {
-      loading.value = false
+      operationInProgress.value = false
     }
   }
 
-  // Logout user
-  const logout = async () => {
+  // Terminate active user session
+  const terminateActiveSession = async () => {
     try {
-      loading.value = true
-      error.value = null
+      operationInProgress.value = true
+      systemErrorNotification.value = null
 
-      console.log('Starting logout process...')
-      console.log('Current user before logout:', user.value)
+      console.log('Commencing session termination process...')
+      console.log('Current authenticated user:', authenticatedUserData.value)
 
-      await signOut(auth)
-      user.value = null
+      await terminateUserSession(auth)
+      authenticatedUserData.value = null
 
-      console.log('Logout successful, user cleared')
-    } catch (err) {
-      console.error('Logout error:', err)
-      error.value = err.message
-      throw err
+      console.log('Session termination completed, user state reset')
+    } catch (sessionError) {
+      console.error('Session termination process failed:', sessionError)
+      systemErrorNotification.value = sessionError.message
+      throw sessionError
     } finally {
-      loading.value = false
+      operationInProgress.value = false
     }
   }
 
-  // Get user data from Firestore
-  const getUserData = async (uid) => {
+  // Retrieve user profile data from database
+  const retrieveUserProfileData = async (userIdentifier) => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid))
-      if (userDoc.exists()) {
-        return userDoc.data()
+      const userDocument = await getDoc(doc(db, 'users', userIdentifier))
+      if (userDocument.exists()) {
+        return userDocument.data()
       }
       return null
-    } catch (err) {
-      console.error('Error fetching user data:', err)
+    } catch (retrievalError) {
+      console.error('User profile data retrieval failed:', retrievalError)
       return null
     }
   }
 
-  // Initialize auth state listener
-  const initAuth = () => {
-    onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('Auth state changed:', firebaseUser ? 'User signed in' : 'User signed out')
+  // Initialize authentication state monitoring
+  const initializeAuthenticationMonitoring = () => {
+    monitorAuthenticationChanges(auth, async (verifiedUser) => {
+      console.log('Authentication state transition detected:', verifiedUser ? 'User session established' : 'User session terminated')
 
-      if (firebaseUser) {
-        // User is signed in
-        console.log('Loading user data for:', firebaseUser.uid)
-        const userData = await getUserData(firebaseUser.uid)
-        user.value = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          ...userData
+      if (verifiedUser) {
+        // Active user session detected
+        console.log('Loading user profile data for:', verifiedUser.uid)
+        const userProfileData = await retrieveUserProfileData(verifiedUser.uid)
+        authenticatedUserData.value = {
+          uid: verifiedUser.uid,
+          email: verifiedUser.email,
+          displayName: verifiedUser.displayName,
+          ...userProfileData
         }
-        console.log('User data loaded:', user.value)
+        console.log('User profile data loaded:', authenticatedUserData.value)
       } else {
-        // User is signed out
-        console.log('Clearing user data')
-        user.value = null
+        // No active user session
+        console.log('Clearing authenticated user data')
+        authenticatedUserData.value = null
       }
-      loading.value = false
+      operationInProgress.value = false
     })
   }
 
-  // Initialize on mount
-  onMounted(() => {
-    initAuth()
-  })
+  // Authentication monitoring will be initialized from App.vue
 
   return {
-    // State
-    user: computed(() => user.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
-    
-    // Computed
-    isAuthenticated,
-    userRole,
-    isYouthUser,
-    isCounsellor,
-    isAdmin,
-    
-    // Methods
-    register,
-    login,
-    logout,
-    clearError,
-    getUserData,
-    initAuth
+    // Reactive state properties
+    user: computed(() => authenticatedUserData.value),
+    loading: computed(() => {
+      console.log('loading computed:', operationInProgress.value)
+      return operationInProgress.value
+    }),
+    error: computed(() => systemErrorNotification.value),
+
+    // Session validation properties
+    isAuthenticated: userSessionActive,
+    userRole: extractUserRole,
+    isYouthUser: isYouthUserType,
+    isCounsellor: isCounsellorUserType,
+    isAdmin: isAdministratorType,
+
+    // Authentication operation methods
+    register: establishNewUserAccount,
+    login: performUserAuthentication,
+    logout: terminateActiveSession,
+    clearError: clearSystemNotifications,
+    getUserData: retrieveUserProfileData,
+    initAuth: initializeAuthenticationMonitoring
   }
 }

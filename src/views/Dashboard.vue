@@ -33,13 +33,13 @@
             <div class="card">
               <div class="card-content">
                 <span class="card-title">
-                  <i class="material-icons left">event</i>
-                  Book Session
+                  <i class="material-icons left">people</i>
+                  Find Your Counsellor
                 </span>
-                <p>Schedule a session with one of our licensed counsellors.</p>
+                <p>Browse and connect with licensed mental health professionals.</p>
               </div>
               <div class="card-action">
-                <router-link to="/book-appointment">Book Now</router-link>
+                <router-link to="/counsellors">Find Now</router-link>
               </div>
             </div>
           </div>

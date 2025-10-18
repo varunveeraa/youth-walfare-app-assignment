@@ -19,16 +19,16 @@ const createGuard = (checkFn, redirectFn) => (to, from, next) => {
 
 // Role-specific dashboard mapping
 const getDashboardRoute = (auth) => {
-  if (auth.isYouthUser.value) return { name: 'YouthDashboard' }
-  if (auth.isCounsellor.value) return { name: 'CounsellorDashboard' }
-  if (auth.isAdmin.value) return { name: 'AdminDashboard' }
-  return { name: 'Dashboard' }
+  if (auth.isYouthUser.value) return { name: 'StudentDashboard' }
+  if (auth.isCounsellor.value) return { name: 'TherapistDashboard' }
+  if (auth.isAdmin.value) return { name: 'AdminControlPanel' }
+  return { name: 'MainDashboard' }
 }
 
 // Authentication guard - requires user to be logged in
 export const requireAuth = createGuard(
   (auth) => auth.isAuthenticated.value,
-  (to, from, next) => next({ name: 'Login', query: { redirect: to.fullPath } })
+  (to, from, next) => next({ name: 'SignIn', query: { redirect: to.fullPath } })
 )
 
 // Guest guard - redirects authenticated users away from auth pages
@@ -42,9 +42,9 @@ const createRoleGuard = (roleCheck) => createGuard(
   (auth) => auth.isAuthenticated.value && roleCheck(auth),
   (to, from, next, auth) => {
     if (!auth.isAuthenticated.value) {
-      next({ name: 'Login', query: { redirect: to.fullPath } })
+      next({ name: 'SignIn', query: { redirect: to.fullPath } })
     } else {
-      next({ name: 'Unauthorized' })
+      next({ name: 'AccessDenied' })
     }
   }
 )
@@ -64,11 +64,11 @@ export const requireRole = (allowedRoles) => {
     }
 
     if (!isAuthenticated.value) {
-      next({ name: 'Login', query: { redirect: to.fullPath } })
+      next({ name: 'SignIn', query: { redirect: to.fullPath } })
     } else if (allowedRoles.includes(userRole.value)) {
       next()
     } else {
-      next({ name: 'Unauthorized' })
+      next({ name: 'AccessDenied' })
     }
   }
 }
@@ -83,17 +83,17 @@ export const requireDashboard = (to, from, next) => {
   }
 
   if (!isAuthenticated.value) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    next({ name: 'SignIn', query: { redirect: to.fullPath } })
     return
   }
 
   // Immediately redirect to role-specific dashboard
   if (isYouthUser.value) {
-    next({ name: 'YouthDashboard' })
+    next({ name: 'StudentDashboard' })
   } else if (isCounsellor.value) {
-    next({ name: 'CounsellorDashboard' })
+    next({ name: 'TherapistDashboard' })
   } else if (isAdmin.value) {
-    next({ name: 'AdminDashboard' })
+    next({ name: 'AdminControlPanel' })
   } else {
     // Fallback - stay on general dashboard if role is unclear
     next()

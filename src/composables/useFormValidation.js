@@ -39,22 +39,29 @@ export const useFormValidation = (formData, validationRules) => {
   // Execute a single validation rule
   const executeValidationRule = (rule, value, fieldName) => {
     if (typeof rule === 'function') {
-      return rule(value, fieldName)
+      return rule(value, fieldName, formData)
     }
-    
+
     if (typeof rule === 'object') {
       const { validator, message, ...params } = rule
       const validatorFn = typeof validator === 'string' ? validators[validator] : validator
-      const error = validatorFn(value, fieldName, params)
-      return error ? (message || error) : null
+
+      // For custom validator functions, pass formData; for string validators, don't
+      if (typeof validator === 'function') {
+        const error = validatorFn(value, fieldName, formData)
+        return error ? (message || error) : null
+      } else {
+        const error = validatorFn(value, fieldName)
+        return error ? (message || error) : null
+      }
     }
-    
+
     // String rule - assume it's a validator function name
     if (typeof rule === 'string') {
       const validatorFn = validators[rule]
       return validatorFn ? validatorFn(value, fieldName) : null
     }
-    
+
     return null
   }
   
@@ -119,8 +126,8 @@ export const commonRules = {
   ],
   confirmPassword: (passwordField = 'password') => [
     { validator: 'validateRequired', message: 'Please confirm your password' },
-    { 
-      validator: (value, fieldName, formData) => validators.validateConfirmPassword(value, formData[passwordField]),
+    {
+      validator: (value, fieldName, formData) => validators.validateConfirmPassword(formData[passwordField], value),
       message: 'Passwords do not match'
     }
   ],

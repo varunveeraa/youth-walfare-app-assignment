@@ -1,40 +1,40 @@
 <template>
   <FormCard
-    title="Welcome Back"
-    subtitle="Sign in to your MindBridge account"
-    icon="account_circle"
-    :error="authError"
-    :loading="loading"
-    submit-text="Sign In"
-    submit-icon="login"
-    loading-text="Signing In..."
-    @submit="handleLogin"
+    card-title="Welcome Back"
+    card-subheading="Access your MindBridge account"
+    header-icon="account_circle"
+    :system-notification="authError"
+    :operation-active="loading"
+    submit-label="Sign In"
+    submit-icon-symbol="login"
+    loading-label="Authenticating..."
+    @submit="processLogin"
   >
     <FormField
-      id="email"
-      label="Email"
-      type="email"
-      icon="email"
-      v-model="form.email"
-      :error="errors.email"
-      required
+      element-identifier="email"
+      label-text="Email Address"
+      input-category="email"
+      icon-symbol="email"
+      v-model="loginForm.email"
+      :error-message="validationErrors.email"
+      mandatory-field
     />
 
     <FormField
-      id="password"
-      label="Password"
-      type="password"
-      icon="lock"
-      v-model="form.password"
-      :error="errors.password"
-      required
+      element-identifier="password"
+      label-text="Password"
+      input-category="password"
+      icon-symbol="lock"
+      v-model="loginForm.password"
+      :error-message="validationErrors.password"
+      mandatory-field
     />
 
-    <!-- Remember Me -->
-    <p>
+    <!-- Session persistence option -->
+    <p class="remember-section">
       <label>
-        <input type="checkbox" v-model="form.rememberMe" />
-        <span>Remember me</span>
+        <input type="checkbox" v-model="loginForm.persistSession" />
+        <span>Keep me signed in</span>
       </label>
     </p>
 
@@ -43,15 +43,15 @@
         <a href="#" class="teal-text">Forgot your password?</a>
       </p>
       <p>
-        Don't have an account?
-        <router-link to="/register" class="teal-text">Sign up here</router-link>
+        Need an account?
+        <router-link to="/register" class="teal-text">Create one here</router-link>
       </p>
     </template>
   </FormCard>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { validateEmail, validateRequired } from '@/utils/validation'
@@ -62,69 +62,71 @@ const router = useRouter()
 const route = useRoute()
 const { login, loading, error: authError, clearError } = useAuth()
 
-const form = reactive({
+const loginForm = reactive({
   email: '',
   password: '',
-  rememberMe: false
+  persistSession: false
 })
 
-const errors = reactive({
+const validationErrors = reactive({
   email: null,
   password: null
 })
 
-const validateForm = () => {
-  errors.email = validateEmail(form.email)
-  errors.password = validateRequired(form.password, 'Password')
+const performFormValidation = () => {
+  validationErrors.email = validateEmail(loginForm.email)
+  validationErrors.password = validateRequired(loginForm.password, 'Password')
 
-  return !errors.email && !errors.password
+  return !validationErrors.email && !validationErrors.password
 }
 
-const handleLogin = async () => {
+const processLogin = async () => {
   clearError()
 
-  if (!validateForm()) {
+  if (!performFormValidation()) {
     return
   }
 
   try {
-    await login(form.email, form.password)
+    await login(loginForm.email, loginForm.password)
 
-    // Get the auth composable to check user role
-    const { user, isYouthUser, isCounsellor, isAdmin } = useAuth()
+    console.log('Login successful, authentication state will handle navigation')
 
-    // Wait a bit more to ensure user data is fully loaded
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Let the requireGuest guard handle the navigation automatically
+    // The guard will redirect to the appropriate dashboard based on user role
 
-    // Determine redirect destination
-    let redirectTo = route.query.redirect
-
-    if (!redirectTo) {
-      // Check user role from the user object directly as a fallback
-      const userRole = user.value?.role
-      console.log('User role:', userRole)
-      console.log('Role checks:', { isYouthUser: isYouthUser.value, isCounsellor: isCounsellor.value, isAdmin: isAdmin.value })
-
-      // Navigate to role-specific dashboard
-      if (isYouthUser.value || userRole === 'youth') {
-        redirectTo = '/youth'
-      } else if (isCounsellor.value || userRole === 'counsellor') {
-        redirectTo = '/counsellor'
-      } else if (isAdmin.value || userRole === 'admin') {
-        redirectTo = '/admin'
-      } else {
-        redirectTo = '/dashboard'
-      }
-    }
-
-    console.log('Redirecting to:', redirectTo)
-    await router.push(redirectTo)
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Authentication failed:', error)
   }
 }
+
+onMounted(() => {
+  // Initialize Materialize components
+  if (typeof M !== 'undefined') {
+    setTimeout(() => {
+      // Initialize text fields
+      M.updateTextFields()
+
+      // Initialize character counters
+      M.CharacterCounter.init(document.querySelectorAll('input[data-length]'))
+    }, 150)
+  }
+})
 </script>
 
 <style scoped>
-/* Minimal styles - most styling is handled by FormCard and FormField components */
+.remember-section {
+  margin: 1.5rem 0;
+}
+
+.remember-section label {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.remember-section input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
 </style>

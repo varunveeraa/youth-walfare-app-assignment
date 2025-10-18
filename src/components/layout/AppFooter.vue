@@ -1,5 +1,5 @@
 <template>
-  <footer class="page-footer teal darken-2">
+  <footer class="page-footer teal darken-2" role="contentinfo">
     <div class="container">
       <div class="row">
         <div class="col s12 center-align">
@@ -11,16 +11,22 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Crisis Support Banner -->
-    <div class="red darken-2" style="padding: 10px 0;">
+    <div class="red darken-2" style="padding: 10px 0;" role="alert" aria-label="Crisis support information">
       <div class="container">
         <div class="row">
           <div class="col s12 center-align">
             <span class="white-text">
-              <i class="material-icons left">warning</i>
+              <i class="material-icons left" aria-hidden="true">warning</i>
               <strong>Crisis Support:</strong> If you're in immediate danger, call emergency services.
-              <a href="tel:988" class="yellow-text text-accent-2"><strong>988 Suicide & Crisis Lifeline</strong></a>
+              <a
+                href="tel:988"
+                class="yellow-text text-accent-2"
+                aria-label="Call 988 Suicide and Crisis Lifeline"
+              >
+                <strong>988 Suicide & Crisis Lifeline</strong>
+              </a>
             </span>
           </div>
         </div>
@@ -35,7 +41,7 @@
           </div>
           <div class="col s12 m6 right-align">
             <span class="grey-text text-lighten-4">
-              Made with <i class="material-icons tiny red-text">favorite</i> for youth mental health
+              Made with <i class="material-icons tiny red-text" aria-hidden="true">favorite</i> for youth mental health
             </span>
           </div>
         </div>
