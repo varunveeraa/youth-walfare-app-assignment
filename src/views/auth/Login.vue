@@ -88,35 +88,41 @@ const processLogin = async () => {
   }
 
   try {
+    console.log('Starting login process...')
     await login(loginForm.email, loginForm.password)
 
-    console.log('Login successful, redirecting to dashboard...')
+    console.log('Login completed, checking auth state for redirect...')
 
-    // Wait for auth state to be fully updated, then redirect
-    await new Promise(resolve => setTimeout(resolve, 100))
+    const { isAuthenticated, isYouthUser, isCounsellor, isAdmin, user } = useAuth()
 
-    const { isAuthenticated, isYouthUser, isCounsellor, isAdmin } = useAuth()
-
-    console.log('Auth state after login:', {
+    console.log('Final auth state:', {
       isAuthenticated: isAuthenticated.value,
       isYouthUser: isYouthUser.value,
       isCounsellor: isCounsellor.value,
-      isAdmin: isAdmin.value
+      isAdmin: isAdmin.value,
+      user: user.value
     })
 
-    if (isAuthenticated.value) {
+    // The login function now waits for user data to be loaded
+    if (isAuthenticated.value && user.value) {
+      console.log('User authenticated, redirecting based on role:', user.value.role)
+
       if (isYouthUser.value) {
+        console.log('Redirecting to StudentDashboard')
         await router.push({ name: 'StudentDashboard' })
       } else if (isCounsellor.value) {
+        console.log('Redirecting to TherapistDashboard')
         await router.push({ name: 'TherapistDashboard' })
       } else if (isAdmin.value) {
+        console.log('Redirecting to AdminControlPanel')
         await router.push({ name: 'AdminControlPanel' })
       } else {
+        console.log('Redirecting to MainDashboard (fallback)')
         await router.push({ name: 'MainDashboard' })
       }
-      console.log('Redirected to dashboard')
+      console.log('Redirect completed successfully')
     } else {
-      console.warn('User not authenticated after login')
+      console.error('Authentication state inconsistent after login')
     }
 
   } catch (error) {

@@ -115,20 +115,34 @@ export const useAuth = () => {
       operationInProgress.value = true
       systemErrorNotification.value = null
 
+      console.log('Starting authentication for:', emailAddress)
       const authenticationResult = await validateUserCredentials(auth, emailAddress, userPassword)
+      console.log('Firebase auth successful, waiting for user data...')
 
-      // Synchronize authentication state properly
+      // Wait for the auth state change and user data to be loaded
       await new Promise((resolve) => {
-        const authStateListener = monitorAuthenticationChanges(auth, (verifiedUser) => {
-          if (verifiedUser && authenticatedUserData.value) {
+        const authStateListener = monitorAuthenticationChanges(auth, async (verifiedUser) => {
+          if (verifiedUser) {
+            console.log('Auth state changed, loading user profile...')
+            // Load user profile data
+            const userProfileData = await retrieveUserProfileData(verifiedUser.uid)
+            authenticatedUserData.value = {
+              uid: verifiedUser.uid,
+              email: verifiedUser.email,
+              displayName: verifiedUser.displayName,
+              ...userProfileData
+            }
+            console.log('User data loaded in login:', authenticatedUserData.value)
             authStateListener()
             resolve()
           }
         })
       })
 
+      console.log('Login process completed successfully')
       return authenticationResult
     } catch (authError) {
+      console.error('Login error:', authError)
       systemErrorNotification.value = authError.message
       throw authError
     } finally {
