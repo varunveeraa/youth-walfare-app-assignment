@@ -306,6 +306,7 @@
           </div>
         </div>
       </div>
+    </div>
     <!-- Edit User Modal -->
     <div id="edit-user-modal" class="modal">
       <div class="modal-content">

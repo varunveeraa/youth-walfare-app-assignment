@@ -305,7 +305,6 @@ onMounted(() => {
   margin-top: 6px;
   font-weight: 500;
 }
-}
 
 .helper-text {
   font-size: 0.8rem;
