@@ -90,10 +90,34 @@ const processLogin = async () => {
   try {
     await login(loginForm.email, loginForm.password)
 
-    console.log('Login successful, authentication state will handle navigation')
+    console.log('Login successful, redirecting to dashboard...')
 
-    // Let the requireGuest guard handle the navigation automatically
-    // The guard will redirect to the appropriate dashboard based on user role
+    // Wait for auth state to be fully updated, then redirect
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const { isAuthenticated, isYouthUser, isCounsellor, isAdmin } = useAuth()
+
+    console.log('Auth state after login:', {
+      isAuthenticated: isAuthenticated.value,
+      isYouthUser: isYouthUser.value,
+      isCounsellor: isCounsellor.value,
+      isAdmin: isAdmin.value
+    })
+
+    if (isAuthenticated.value) {
+      if (isYouthUser.value) {
+        await router.push({ name: 'StudentDashboard' })
+      } else if (isCounsellor.value) {
+        await router.push({ name: 'TherapistDashboard' })
+      } else if (isAdmin.value) {
+        await router.push({ name: 'AdminControlPanel' })
+      } else {
+        await router.push({ name: 'MainDashboard' })
+      }
+      console.log('Redirected to dashboard')
+    } else {
+      console.warn('User not authenticated after login')
+    }
 
   } catch (error) {
     console.error('Authentication failed:', error)
