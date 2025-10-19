@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { requireAuth, requireGuest, requireYouthUser, requireCounsellor, requireAdmin, requireDashboard } from './guards'
+import { requireGuest, requireYouthUser, requireCounsellor, requireAdmin, requireDashboard } from './guards'
 
 // Asynchronous component loading for performance optimization
 const LandingPageInterface = () => import('@/views/Home.vue')

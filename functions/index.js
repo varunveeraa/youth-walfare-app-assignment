@@ -30,40 +30,36 @@ exports.assignUserRole = functions.firestore
       const userData = snap.data();
       const userId = context.params.userId;
 
-      try {
-        // Simple role assignment
-        let assignedRole = userData.role || "youth";
-        if (userData.email && userData.email.includes("@admin")) {
-          assignedRole = "admin";
-        } else if (userData.isProfessional) {
-          assignedRole = "counsellor";
-        }
-
-        // Update user with role
-        await admin.firestore()
-            .collection("users")
-            .doc(userId)
-            .update({
-              role: assignedRole,
-              isActive: true,
-              roleAssignedAt: new Date(),
-            });
-
-        // Set auth claims
-        await admin.auth().setCustomUserClaims(userId, {
-          role: assignedRole,
-        });
-
-        // Send welcome email
-        if (sendGridApiKey && userData.email) {
-          await sendWelcomeEmail(userData.email, userData.displayName,
-              assignedRole);
-        }
-
-        return {success: true, role: assignedRole};
-      } catch (error) {
-        throw error;
+      // Simple role assignment
+      let assignedRole = userData.role || "youth";
+      if (userData.email && userData.email.includes("@admin")) {
+        assignedRole = "admin";
+      } else if (userData.isProfessional) {
+        assignedRole = "counsellor";
       }
+
+      // Update user with role
+      await admin.firestore()
+          .collection("users")
+          .doc(userId)
+          .update({
+            role: assignedRole,
+            isActive: true,
+            roleAssignedAt: new Date(),
+          });
+
+      // Set auth claims
+      await admin.auth().setCustomUserClaims(userId, {
+        role: assignedRole,
+      });
+
+      // Send welcome email
+      if (sendGridApiKey && userData.email) {
+        await sendWelcomeEmail(userData.email, userData.displayName,
+            assignedRole);
+      }
+
+      return {success: true, role: assignedRole};
     });
 
 /**
@@ -101,11 +97,10 @@ async function sendWelcomeEmail(userEmail, userName, userRole) {
  */
 exports.sendAppointmentNotification = functions.firestore
     .document("appointments/{appointmentId}")
-    .onCreate(async (snap, context) => {
+    .onCreate(async (snap) => {
       if (!sendGridApiKey) return;
 
       const appointmentData = snap.data();
-      const appointmentId = context.params.appointmentId;
 
       try {
         // Get user and counsellor info
@@ -124,7 +119,6 @@ exports.sendAppointmentNotification = functions.firestore
         // Send notification to counsellor
         await sendAppointmentEmail(appointmentData, counsellorData,
             "notification");
-
       } catch (error) {
         // Email sending failed silently
       }
