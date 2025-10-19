@@ -19,7 +19,9 @@
     "datatables.net": "^2.3.4",
     "datatables.net-dt": "^2.3.4",
     "firebase": "^12.4.0",
+    "html2canvas": "^1.4.1",
     "ical-generator": "^9.0.0",
+    "jspdf": "^3.0.3",
     "mapbox-gl": "^3.15.0",
     "materialize-css": "^1.0.0",
     "vue": "^3.5.22",
@@ -27,7 +29,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
-    "vite": "^7.1.7",
-    "vite-plugin-vue-devtools": "^8.0.2"
+    "vite": "^7.1.7"
   }
 }

@@ -43,7 +43,6 @@ export const useCounsellorStats = () => {
       
       return uniqueClients.size
     } catch (err) {
-      console.error('Error calculating total clients:', err)
       return 0
     }
   }
@@ -76,7 +75,6 @@ export const useCounsellorStats = () => {
 
       return count
     } catch (err) {
-      console.error('Error calculating sessions this month:', err)
       return 0
     }
   }
@@ -109,7 +107,6 @@ export const useCounsellorStats = () => {
       
       return count > 0 ? totalRating / count : 0
     } catch (err) {
-      console.error('Error calculating average rating:', err)
       return 0
     }
   }
@@ -121,7 +118,6 @@ export const useCounsellorStats = () => {
       // This can be updated when proper Firebase rules are set up
       return 40 // Default 40 hours per week
     } catch (err) {
-      console.error('Error calculating hours available:', err)
       return 40 // Default fallback
     }
   }
@@ -129,7 +125,6 @@ export const useCounsellorStats = () => {
   // Main function to fetch all stats
   const fetchCounsellorStats = async (counsellorId) => {
     if (!counsellorId) {
-      console.warn('No counsellor ID provided for stats calculation')
       return
     }
 
@@ -137,8 +132,6 @@ export const useCounsellorStats = () => {
     error.value = null
 
     try {
-      console.log('Fetching counsellor stats for:', counsellorId)
-
       // Fetch all stats in parallel for better performance
       const [clients, sessions, rating, hours] = await Promise.all([
         calculateTotalClients(counsellorId),
@@ -153,15 +146,7 @@ export const useCounsellorStats = () => {
       averageRating.value = rating
       hoursAvailable.value = hours
 
-      console.log('Counsellor stats calculated:', {
-        totalClients: clients,
-        sessionsThisMonth: sessions,
-        averageRating: rating,
-        hoursAvailable: hours
-      })
-
     } catch (err) {
-      console.error('Error fetching counsellor stats:', err)
       error.value = err.message
     } finally {
       loading.value = false

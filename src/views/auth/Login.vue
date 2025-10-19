@@ -88,46 +88,27 @@ const processLogin = async () => {
   }
 
   try {
-    console.log('Starting login process...')
     await login(loginForm.email, loginForm.password)
-
-    console.log('Login completed, checking auth state for redirect...')
 
     const { isAuthenticated, isYouthUser, isCounsellor, isAdmin, user } = useAuth()
 
-    console.log('Final auth state:', {
-      isAuthenticated: isAuthenticated.value,
-      isYouthUser: isYouthUser.value,
-      isCounsellor: isCounsellor.value,
-      isAdmin: isAdmin.value,
-      user: user.value
-    })
-
     // The login function now waits for user data to be loaded
     if (isAuthenticated.value && user.value) {
-      console.log('User authenticated, redirecting based on role:', user.value.role)
-
       if (isYouthUser.value) {
-        console.log('Redirecting to StudentDashboard')
         await router.push({ name: 'StudentDashboard' })
       } else if (isCounsellor.value) {
-        console.log('Redirecting to TherapistDashboard')
         await router.push({ name: 'TherapistDashboard' })
       } else if (isAdmin.value) {
-        console.log('Redirecting to AdminControlPanel')
         await router.push({ name: 'AdminControlPanel' })
       } else {
-        console.log('Redirecting to MainDashboard (fallback)')
         await router.push({ name: 'MainDashboard' })
       }
-      console.log('Redirect completed successfully')
-    } else {
-      console.error('Authentication state inconsistent after login')
     }
-
   } catch (error) {
-    console.error('Authentication failed:', error)
+    // Error handling managed by useAuth composable
   }
+
+
 }
 
 onMounted(() => {

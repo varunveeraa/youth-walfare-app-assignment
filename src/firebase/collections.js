@@ -47,7 +47,6 @@ export const createDocument = async (collectionRef, data) => {
     })
     return docRef.id
   } catch (error) {
-    console.error('Error creating document:', error)
     throw error
   }
 }
@@ -61,7 +60,6 @@ export const updateDocument = async (collectionName, docId, data) => {
     })
     return true
   } catch (error) {
-    console.error('Error updating document:', error)
     throw error
   }
 }
@@ -72,7 +70,6 @@ export const deleteDocument = async (collectionName, docId) => {
     await deleteDoc(docRef)
     return true
   } catch (error) {
-    console.error('Error deleting document:', error)
     throw error
   }
 }
@@ -88,7 +85,6 @@ export const getDocument = async (collectionName, docId) => {
       return null
     }
   } catch (error) {
-    console.error('Error getting document:', error)
     throw error
   }
 }
@@ -108,7 +104,6 @@ export const getDocuments = async (collectionRef, queryConstraints = []) => {
     
     return documents
   } catch (error) {
-    console.error('Error getting documents:', error)
     throw error
   }
 }

@@ -77,6 +77,34 @@
                 </span>
               </div>
               <div class="col s12 m6 right-align">
+                <div class="export-controls" style="margin-bottom: 1rem;">
+                  <button
+                    @click="exportCSV"
+                    class="btn waves-effect waves-light blue"
+                    :disabled="loading || exporting"
+                    style="margin-right: 0.5rem;"
+                  >
+                    <i class="material-icons left">file_download</i>
+                    CSV
+                  </button>
+                  <button
+                    @click="exportPDF"
+                    class="btn waves-effect waves-light red"
+                    :disabled="loading || exporting"
+                    style="margin-right: 0.5rem;"
+                  >
+                    <i class="material-icons left">picture_as_pdf</i>
+                    PDF
+                  </button>
+                  <button
+                    @click="exportJSONData"
+                    class="btn waves-effect waves-light green"
+                    :disabled="loading || exporting"
+                  >
+                    <i class="material-icons left">code</i>
+                    JSON
+                  </button>
+                </div>
                 <div class="input-field inline">
                   <select v-model="pageSize" @change="handlePageSizeChange" :disabled="loading">
                     <option value="6">6 per page</option>
@@ -122,114 +150,181 @@
       </div>
 
       <!-- Counsellors Grid -->
-      <div v-if="!loading && !error" class="row">
-        <div 
-          v-for="counsellor in paginatedCounsellors" 
-          :key="counsellor.id"
-          class="col s12 m6 l4"
-        >
-          <div class="card counsellor-card hoverable">
-            <!-- Profile Image -->
-            <div class="card-image">
-              <img 
-                :src="counsellor.profileImage || '/api/placeholder/300/200'" 
-                :alt="counsellor.displayName"
-                class="counsellor-image"
-              >
-              <span class="card-title">{{ counsellor.displayName }}</span>
-              <div class="availability-badge">
-                <span class="chip green lighten-4 green-text">
-                  <i class="material-icons left tiny">schedule</i>
-                  {{ counsellor.availability }}
-                </span>
-              </div>
+      <div v-if="!loading && !error">
+        <!-- Real Counsellors Section -->
+        <div v-if="organizedCounsellors.hasReal">
+          <div class="row">
+            <div class="col s12">
+              <h5 class="section-header">
+                <i class="material-icons left">verified_user</i>
+                Our Counsellors
+              </h5>
+              <p class="grey-text">Licensed mental health professionals ready to help you.</p>
             </div>
-
-            <!-- Profile Content -->
-            <div class="card-content">
-              <!-- Rating -->
-              <div class="rating-section">
-                <div class="stars">
-                  <i 
-                    v-for="(star, index) in getRatingStars(counsellor.averageRating)" 
-                    :key="index"
-                    class="material-icons tiny yellow-text"
+          </div>
+          <div class="row">
+            <div
+              v-for="counsellor in organizedCounsellors.real"
+              :key="counsellor.id"
+              class="col s12 m6 l4"
+            >
+              <div class="card counsellor-card hoverable">
+                <div class="card-image">
+                  <img
+                    :src="counsellor.profileImage || '/api/placeholder/300/200'"
+                    :alt="counsellor.displayName"
+                    class="counsellor-image"
                   >
-                    {{ star }}
-                  </i>
+                  <span class="card-title">{{ counsellor.displayName }}</span>
+                  <div class="availability-badge">
+                    <span class="chip green lighten-4 green-text">
+                      <i class="material-icons left tiny">schedule</i>
+                      {{ counsellor.availability }}
+                    </span>
+                  </div>
                 </div>
-                <span class="rating-text">
-                  {{ formatRating(counsellor.averageRating) }}
-                  <span class="grey-text">({{ counsellor.totalRatings }} reviews)</span>
-                </span>
+                <div class="card-content">
+                  <div class="rating-section">
+                    <div class="stars">
+                      <i
+                        v-for="(star, index) in getRatingStars(counsellor.averageRating)"
+                        :key="index"
+                        class="material-icons yellow-text"
+                      >
+                        {{ star }}
+                      </i>
+                    </div>
+                    <span class="rating-text">
+                      {{ formatRating(counsellor.averageRating) }}
+                      ({{ counsellor.totalRatings }} reviews)
+                    </span>
+                  </div>
+                  <div class="experience">
+                    <i class="material-icons left">work</i>
+                    <span>{{ counsellor.experience }} years experience</span>
+                  </div>
+                  <p class="bio-preview">{{ counsellor.bio?.substring(0, 100) }}...</p>
+                  <div class="price-info">
+                    <span class="price">${{ counsellor.hourlyRate }}/hour</span>
+                    <span class="response-time">{{ counsellor.responseTime }}</span>
+                  </div>
+                </div>
+                <div class="card-action">
+                  <button
+                    @click="viewProfile(counsellor)"
+                    class="btn-flat teal-text"
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    @click="bookAppointment(counsellor)"
+                    class="btn teal"
+                  >
+                    Book Session
+                  </button>
+                </div>
               </div>
-
-              <!-- Experience -->
-              <p class="experience">
-                <i class="material-icons left tiny">work</i>
-                {{ counsellor.experience || 'New' }} years experience
-              </p>
-
-              <!-- Bio -->
-              <p class="bio">{{ truncateBio(counsellor.bio) }}</p>
-
-              <!-- Specialties -->
-              <div class="specialties">
-                <span
-                  v-for="specialty in counsellor.specializations?.slice(0, 3)"
-                  :key="specialty"
-                  class="chip tiny"
-                  :class="`${getSpecialtyColor(specialty)} lighten-4 ${getSpecialtyColor(specialty)}-text`"
-                >
-                  {{ specialty }}
-                </span>
-                <span
-                  v-if="counsellor.specializations?.length > 3"
-                  class="chip tiny grey lighten-4 grey-text"
-                >
-                  +{{ counsellor.specializations.length - 3 }} more
-                </span>
-              </div>
-
-              <!-- Response Time -->
-              <p class="response-time grey-text">
-                <i class="material-icons left tiny">schedule</i>
-                Responds {{ counsellor.responseTime }}
-              </p>
             </div>
+          </div>
+        </div>
 
-            <!-- Actions -->
-            <div class="card-action">
-              <button 
-                @click="viewProfile(counsellor)" 
-                class="btn waves-effect waves-light teal"
-              >
-                <i class="material-icons left">visibility</i>
-                View Profile
-              </button>
-              <button 
-                @click="bookSession(counsellor)" 
-                class="btn waves-effect waves-light blue right"
-              >
-                <i class="material-icons left">event</i>
-                Book Session
-              </button>
+        <!-- Demo Counsellors Section -->
+        <div v-if="organizedCounsellors.hasDemo">
+          <div class="row">
+            <div class="col s12">
+              <h5 class="section-header demo-section">
+                <i class="material-icons left">info</i>
+                Demo Profiles
+              </h5>
+              <p class="grey-text">Sample counsellor profiles for demonstration purposes.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div
+              v-for="counsellor in organizedCounsellors.demo"
+              :key="counsellor.id"
+              class="col s12 m6 l4"
+            >
+              <div class="card counsellor-card hoverable">
+                <div class="demo-badge">
+                  <span class="chip blue lighten-4 blue-text text-darken-2">
+                    <i class="material-icons left tiny">info</i>
+                    Demo Profile
+                  </span>
+                </div>
+                <div class="card-image">
+                  <img
+                    :src="counsellor.profileImage || '/api/placeholder/300/200'"
+                    :alt="counsellor.displayName"
+                    class="counsellor-image"
+                  >
+                  <span class="card-title">{{ counsellor.displayName }}</span>
+                  <div class="availability-badge">
+                    <span class="chip green lighten-4 green-text">
+                      <i class="material-icons left tiny">schedule</i>
+                      {{ counsellor.availability }}
+                    </span>
+                  </div>
+                </div>
+                <div class="card-content">
+                  <div class="rating-section">
+                    <div class="stars">
+                      <i
+                        v-for="(star, index) in getRatingStars(counsellor.averageRating)"
+                        :key="index"
+                        class="material-icons yellow-text"
+                      >
+                        {{ star }}
+                      </i>
+                    </div>
+                    <span class="rating-text">
+                      {{ formatRating(counsellor.averageRating) }}
+                      ({{ counsellor.totalRatings }} reviews)
+                    </span>
+                  </div>
+                  <div class="experience">
+                    <i class="material-icons left">work</i>
+                    <span>{{ counsellor.experience }} years experience</span>
+                  </div>
+                  <p class="bio-preview">{{ counsellor.bio?.substring(0, 100) }}...</p>
+                  <div class="price-info">
+                    <span class="price">${{ counsellor.hourlyRate }}/hour</span>
+                    <span class="response-time">{{ counsellor.responseTime }}</span>
+                  </div>
+                </div>
+                <div class="card-action">
+                  <button
+                    @click="viewProfile(counsellor)"
+                    class="btn-flat teal-text"
+                  >
+                    View Profile
+                  </button>
+                  <button
+                    class="btn disabled grey"
+                    title="Demo profiles cannot be booked"
+                  >
+                    Demo Only
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-if="paginatedCounsellors.length === 0" class="col s12">
-          <div class="card-panel center-align grey lighten-5">
-            <i class="material-icons large grey-text">search_off</i>
-            <h5 class="grey-text">No counsellors found</h5>
-            <p class="grey-text">
-              Try adjusting your search criteria or browse all counsellors.
-            </p>
-            <button @click="resetFilters" class="btn waves-effect waves-light teal">
-              <i class="material-icons left">refresh</i>
-              Show All Counsellors
-            </button>
+        <div v-if="!organizedCounsellors.hasReal && !organizedCounsellors.hasDemo" class="row">
+          <div class="col s12">
+            <div class="card-panel center-align grey lighten-5">
+              <i class="material-icons large grey-text">search_off</i>
+              <h5 class="grey-text">No counsellors found</h5>
+              <p class="grey-text">
+                Try adjusting your search criteria or browse all counsellors.
+              </p>
+              <button @click="resetFilters" class="btn waves-effect waves-light teal">
+                <i class="material-icons left">refresh</i>
+                Show All Counsellors
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -272,8 +367,16 @@
     <div id="counsellor-profile-modal" class="modal modal-fixed-footer">
       <div class="modal-content">
         <div v-if="selectedCounsellor">
-          <h4>{{ selectedCounsellor.displayName }}</h4>
-          
+          <div class="modal-header">
+            <h4>{{ selectedCounsellor.displayName }}</h4>
+            <div v-if="selectedCounsellor.isDummy" class="demo-badge-modal">
+              <span class="chip blue lighten-4 blue-text text-darken-2">
+                <i class="material-icons left tiny">info</i>
+                Demo Profile - For demonstration purposes
+              </span>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col s12 m4">
               <img 
@@ -460,6 +563,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAppointments } from '@/composables/useFirestore'
 import { useCounsellorDirectory } from '@/composables/useCounsellorDirectory'
+import { useExport } from '@/composables/useExport'
 import { validateRequired } from '@/utils/validation'
 
 const router = useRouter()
@@ -488,8 +592,12 @@ const {
   resetFilters,
   formatRating,
   getRatingStars,
-  getSpecialtyColor
+  getSpecialtyColor,
+  exportCounsellorsCSV
 } = useCounsellorDirectory()
+
+// Export functionality
+const { exporting, exportCounsellorsPDF, exportJSON } = useExport()
 
 // Local state
 const selectedCounsellor = ref(null)
@@ -521,13 +629,35 @@ const visiblePages = computed(() => {
   const pages = []
   const start = Math.max(1, currentPage.value - 2)
   const end = Math.min(totalPages.value, currentPage.value + 2)
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
+
+// Organize counsellors by type for display
+const organizedCounsellors = computed(() => {
+  const real = paginatedCounsellors.value.filter(c => !c.isDummy)
+  const demo = paginatedCounsellors.value.filter(c => c.isDummy)
+
+  return {
+    real,
+    demo,
+    hasReal: real.length > 0,
+    hasDemo: demo.length > 0
+  }
+})
+
+const hasResults = computed(() => filteredCounsellors.value.length > 0)
+
+const sessionTypes = computed(() => [
+  'Video Call',
+  'Phone Call',
+  'In-Person',
+  'Group Sessions'
+])
 
 // Methods
 const handleSearch = () => {
@@ -665,6 +795,81 @@ const formatBookingDate = (date) => {
   })
 }
 
+// Export methods
+const exportCSV = () => {
+  try {
+    const result = exportCounsellorsCSV()
+    if (result.success) {
+      M.toast({ html: result.message, classes: 'green' })
+    } else {
+      M.toast({ html: result.message, classes: 'red' })
+    }
+  } catch (err) {
+    M.toast({ html: 'Error exporting CSV: ' + err.message, classes: 'red' })
+  }
+}
+
+const exportPDF = async () => {
+  try {
+    const filters = {
+      searchQuery: searchQuery.value,
+      selectedSpecialty: selectedSpecialty.value
+    }
+
+    const result = await exportCounsellorsPDF(filteredCounsellors.value, filters)
+    if (result.success) {
+      M.toast({ html: result.message, classes: 'green' })
+    } else {
+      M.toast({ html: result.message, classes: 'red' })
+    }
+  } catch (err) {
+    M.toast({ html: 'Error exporting PDF: ' + err.message, classes: 'red' })
+  }
+}
+
+const exportJSONData = () => {
+  try {
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      filters: {
+        searchQuery: searchQuery.value,
+        selectedSpecialty: selectedSpecialty.value,
+        sortField: sortField.value,
+        sortDirection: sortDirection.value
+      },
+      totalCounsellors: filteredCounsellors.value.length,
+      counsellors: filteredCounsellors.value.map(counsellor => ({
+        id: counsellor.id,
+        displayName: counsellor.displayName,
+        email: counsellor.email,
+        bio: counsellor.bio,
+        specializations: counsellor.specializations,
+        experience: counsellor.experience,
+        averageRating: counsellor.averageRating,
+        totalRatings: counsellor.totalRatings,
+        hourlyRate: counsellor.hourlyRate,
+        sessionTypes: counsellor.sessionTypes,
+        languages: counsellor.languages,
+        licenseNumber: counsellor.licenseNumber,
+        licenseState: counsellor.licenseState,
+        availability: counsellor.availability,
+        responseTime: counsellor.responseTime
+      }))
+    }
+
+    const filename = `counsellors-directory-${new Date().toISOString().split('T')[0]}.json`
+    const result = exportJSON(exportData, filename)
+
+    if (result.success) {
+      M.toast({ html: result.message, classes: 'green' })
+    } else {
+      M.toast({ html: result.message, classes: 'red' })
+    }
+  } catch (err) {
+    M.toast({ html: 'Error exporting JSON: ' + err.message, classes: 'red' })
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   // Initialize Materialize components
@@ -689,6 +894,79 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease-in-out;
+}
+
+.counsellor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Demo badge styling */
+.demo-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+.demo-badge .chip {
+  font-size: 0.75rem;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.demo-badge-modal {
+  margin-bottom: 15px;
+}
+
+.demo-badge-modal .chip {
+  font-size: 0.85rem;
+  padding: 0 12px;
+  font-weight: 500;
+}
+
+.modal-header {
+  margin-bottom: 20px;
+}
+
+/* Section headers */
+.section-header {
+  color: #26a69a;
+  font-weight: 500;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.section-header.demo-section {
+  color: #2196f3;
+}
+
+.section-header i {
+  margin-right: 8px;
+}
+
+/* Demo counsellor cards styling */
+.counsellor-card:has(.demo-badge) {
+  border-left: 4px solid #2196f3;
+}
+
+.counsellor-card:has(.demo-badge):hover {
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.15);
+}
+
+/* Real counsellor cards styling */
+.counsellor-card:not(:has(.demo-badge)) {
+  border-left: 4px solid #26a69a;
+}
+
+.counsellor-card:not(:has(.demo-badge)):hover {
+  box-shadow: 0 8px 25px rgba(38, 166, 154, 0.15);
 }
 
 .counsellor-image {
@@ -782,9 +1060,32 @@ onMounted(async () => {
     width: 100%;
     margin-bottom: 0.5rem;
   }
-  
+
   .card-action .btn.right {
     float: none;
+  }
+}
+
+.export-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.export-controls .btn {
+  min-width: 80px;
+}
+
+@media (max-width: 768px) {
+  .export-controls {
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .export-controls .btn {
+    min-width: 70px;
+    font-size: 0.8rem;
   }
 }
 </style>

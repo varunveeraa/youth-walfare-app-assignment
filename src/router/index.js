@@ -30,8 +30,7 @@ const PlatformConfigurationInterface = () => import('@/views/admin/PlatformSetti
 // Geographic wellness discovery interface
 const TherapeuticLocationDiscovery = () => import('@/views/GeoLocation.vue')
 
-// Development test components
-const FormFieldTestComponent = () => import('@/components/form/FormFieldTest.vue')
+
 
 const applicationRoutes = [
   {
@@ -165,12 +164,7 @@ const applicationRoutes = [
     beforeEnter: requireAdmin
   },
 
-  // Development test routes
-  {
-    path: '/test-form',
-    name: 'FormFieldTest',
-    component: FormFieldTestComponent
-  },
+
 
   // Fallback route for unmatched paths
   {

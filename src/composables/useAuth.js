@@ -18,7 +18,6 @@ export const useAuth = () => {
   // Session validation computations
   const userSessionActive = computed(() => {
     const isActive = !!authenticatedUserData.value
-    console.log('userSessionActive computed:', isActive, 'user:', authenticatedUserData.value)
     return isActive
   })
   const extractUserRole = computed(() => authenticatedUserData.value?.role || null)
@@ -37,20 +36,14 @@ export const useAuth = () => {
       operationInProgress.value = true
       systemErrorNotification.value = null
 
-      console.log('Commencing user registration process...', { emailAddress, userMetadata })
-
       // Generate authentication credentials
       const registrationOutcome = await establishUserCredentials(auth, emailAddress, userPassword)
       const registeredUser = registrationOutcome.user
-
-      console.log('Authentication credentials established:', registeredUser.uid)
 
       // Configure user profile attributes
       await modifyUserProfile(registeredUser, {
         displayName: userMetadata.displayName
       })
-
-      console.log('User profile attributes configured')
 
       // Persist user information to database
       const userDocumentData = {
@@ -63,19 +56,11 @@ export const useAuth = () => {
         ...userMetadata
       }
 
-      console.log('Persisting user data to database...', userDocumentData)
-
       await setDoc(doc(db, 'users', registeredUser.uid), userDocumentData)
-
-      console.log('User data persistence completed')
 
       return registrationOutcome
     } catch (registrationError) {
-      console.error('User registration process failed:', {
-        errorCode: registrationError.code,
-        errorMessage: registrationError.message,
-        errorStack: registrationError.stack
-      })
+
 
       // Convert technical error codes to user-comprehensible messages
       let userFriendlyNotification = registrationError.message
@@ -115,15 +100,12 @@ export const useAuth = () => {
       operationInProgress.value = true
       systemErrorNotification.value = null
 
-      console.log('Starting authentication for:', emailAddress)
       const authenticationResult = await validateUserCredentials(auth, emailAddress, userPassword)
-      console.log('Firebase auth successful, waiting for user data...')
 
       // Wait for the auth state change and user data to be loaded
       await new Promise((resolve) => {
         const authStateListener = monitorAuthenticationChanges(auth, async (verifiedUser) => {
           if (verifiedUser) {
-            console.log('Auth state changed, loading user profile...')
             // Load user profile data
             const userProfileData = await retrieveUserProfileData(verifiedUser.uid)
             authenticatedUserData.value = {
@@ -132,17 +114,14 @@ export const useAuth = () => {
               displayName: verifiedUser.displayName,
               ...userProfileData
             }
-            console.log('User data loaded in login:', authenticatedUserData.value)
             authStateListener()
             resolve()
           }
         })
       })
 
-      console.log('Login process completed successfully')
       return authenticationResult
     } catch (authError) {
-      console.error('Login error:', authError)
       systemErrorNotification.value = authError.message
       throw authError
     } finally {
@@ -156,15 +135,9 @@ export const useAuth = () => {
       operationInProgress.value = true
       systemErrorNotification.value = null
 
-      console.log('Commencing session termination process...')
-      console.log('Current authenticated user:', authenticatedUserData.value)
-
       await terminateUserSession(auth)
       authenticatedUserData.value = null
-
-      console.log('Session termination completed, user state reset')
     } catch (sessionError) {
-      console.error('Session termination process failed:', sessionError)
       systemErrorNotification.value = sessionError.message
       throw sessionError
     } finally {
@@ -181,7 +154,6 @@ export const useAuth = () => {
       }
       return null
     } catch (retrievalError) {
-      console.error('User profile data retrieval failed:', retrievalError)
       return null
     }
   }
@@ -189,11 +161,8 @@ export const useAuth = () => {
   // Initialize authentication state monitoring
   const initializeAuthenticationMonitoring = () => {
     monitorAuthenticationChanges(auth, async (verifiedUser) => {
-      console.log('Authentication state transition detected:', verifiedUser ? 'User session established' : 'User session terminated')
-
       if (verifiedUser) {
         // Active user session detected
-        console.log('Loading user profile data for:', verifiedUser.uid)
         const userProfileData = await retrieveUserProfileData(verifiedUser.uid)
         authenticatedUserData.value = {
           uid: verifiedUser.uid,
@@ -201,10 +170,8 @@ export const useAuth = () => {
           displayName: verifiedUser.displayName,
           ...userProfileData
         }
-        console.log('User profile data loaded:', authenticatedUserData.value)
       } else {
         // No active user session
-        console.log('Clearing authenticated user data')
         authenticatedUserData.value = null
       }
       operationInProgress.value = false
@@ -217,7 +184,6 @@ export const useAuth = () => {
     // Reactive state properties
     user: computed(() => authenticatedUserData.value),
     loading: computed(() => {
-      console.log('loading computed:', operationInProgress.value)
       return operationInProgress.value
     }),
     error: computed(() => systemErrorNotification.value),

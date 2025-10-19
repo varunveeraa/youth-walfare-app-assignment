@@ -19,9 +19,6 @@ const senderName = config.sendgrid && config.sendgrid.sender_name ||
 
 if (sendGridApiKey) {
   sgMail.setApiKey(sendGridApiKey);
-  console.log(`✅ Email configured with sender: ${senderEmail}`);
-} else {
-  console.warn("❌ SendGrid API key not configured.");
 }
 
 /**
@@ -57,18 +54,14 @@ exports.assignUserRole = functions.firestore
           role: assignedRole,
         });
 
-        console.log(`Role '${assignedRole}' assigned to user ${userId}`);
-
         // Send welcome email
         if (sendGridApiKey && userData.email) {
           await sendWelcomeEmail(userData.email, userData.displayName,
               assignedRole);
-          console.log(`Welcome email sent to user ${userId}`);
         }
 
         return {success: true, role: assignedRole};
       } catch (error) {
-        console.error(`Error processing user ${userId}:`, error);
         throw error;
       }
     });
@@ -98,9 +91,8 @@ async function sendWelcomeEmail(userEmail, userName, userRole) {
     };
 
     await sgMail.send(msg);
-    console.log(`Welcome email sent to: ${userEmail}`);
   } catch (error) {
-    console.error(`Failed to send welcome email:`, error);
+    // Email sending failed silently
   }
 }
 
@@ -133,9 +125,8 @@ exports.sendAppointmentNotification = functions.firestore
         await sendAppointmentEmail(appointmentData, counsellorData,
             "notification");
 
-        console.log(`Appointment emails sent for ${appointmentId}`);
       } catch (error) {
-        console.error(`Error sending appointment emails:`, error);
+        // Email sending failed silently
       }
     });
 
@@ -153,23 +144,65 @@ async function sendAppointmentEmail(appointment, user, type) {
     const subject = isConfirmation ?
       "Appointment Confirmation" : "New Appointment Booked";
 
+    // Format date and time from appointmentDate timestamp
+    let formattedDate = "Not specified";
+    let formattedTime = "Not specified";
+
+    if (appointment.appointmentDate) {
+      let appointmentDateTime;
+
+      // Handle both Firestore Timestamp and regular Date objects
+      if (appointment.appointmentDate.toDate) {
+        // Firestore Timestamp
+        appointmentDateTime = appointment.appointmentDate.toDate();
+      } else if (appointment.appointmentDate instanceof Date) {
+        // Regular Date object
+        appointmentDateTime = appointment.appointmentDate;
+      } else {
+        // String or number timestamp
+        appointmentDateTime = new Date(appointment.appointmentDate);
+      }
+
+      // Format date and time
+      formattedDate = appointmentDateTime.toLocaleDateString("en-AU", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      formattedTime = appointmentDateTime.toLocaleTimeString("en-AU", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    const sessionType = appointment.sessionType || "Counselling";
+    const duration = appointment.duration ?
+      `${appointment.duration} minutes` : "60 minutes";
+
     const msg = {
       to: user.email,
       from: {email: senderEmail, name: senderName},
       subject: subject,
-      text: `${subject}! Your appointment on ${appointment.date} at ` +
-        `${appointment.time}.`,
+      text: `${subject}! Your appointment on ${formattedDate} at ` +
+        `${formattedTime} (${sessionType}, ${duration}).`,
       html: `<h2>${subject}</h2>
         <p>Hello ${user.displayName || "there"},</p>
-        <p><strong>Date:</strong> ${appointment.date}</p>
-        <p><strong>Time:</strong> ${appointment.time}</p>
-        <p><strong>Type:</strong> ${appointment.type || "Counselling"}</p>
+        <p><strong>Date:</strong> ${formattedDate}</p>
+        <p><strong>Time:</strong> ${formattedTime}</p>
+        <p><strong>Type:</strong> ${sessionType}</p>
+        <p><strong>Duration:</strong> ${duration}</p>
+        ${appointment.counsellorName ?
+          `<p><strong>Counsellor:</strong> ${appointment.counsellorName}</p>` :
+          ""}
+        <p>We look forward to your session. Please join a few minutes early.</p>
         <p>Best regards,<br>Youth Welfare Team</p>`,
     };
 
     await sgMail.send(msg);
-    console.log(`Appointment ${type} email sent to: ${user.email}`);
   } catch (error) {
-    console.error(`Failed to send appointment email:`, error);
+    // Email sending failed silently
   }
 }

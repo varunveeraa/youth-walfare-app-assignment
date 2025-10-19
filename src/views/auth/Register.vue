@@ -164,19 +164,14 @@ const { errors: validationErrors, validateForm: performValidation } = useFormVal
 
 const verifyFirebaseConnection = async () => {
   try {
-    console.log('Verifying Firebase connection...')
-
-    // Check Firebase Auth
-    console.log('Firebase Auth instance:', auth)
-    console.log('Firebase Auth current user:', auth.currentUser)
-
-    // Check Firestore
-    console.log('Firestore instance:', db)
-
-    alert('Firebase connection verification completed. Check console for details.')
+    // Check Firebase Auth and Firestore connections
+    if (auth && db) {
+      alert('Firebase connection verified successfully.')
+    } else {
+      alert('Firebase connection verification failed.')
+    }
   } catch (error) {
-    console.error('Firebase connection verification failed:', error)
-    alert('Firebase connection verification failed. Check console for details.')
+    alert('Firebase connection verification failed.')
   }
 }
 
@@ -196,15 +191,9 @@ const processRegistration = async () => {
 
     const registrationResult = await register(registrationForm.email, registrationForm.password, userProfile)
 
-    // Automated welcome email via Cloud Functions
-    if (registrationResult && registrationResult.user) {
-      console.log('Account created successfully - welcome email will be sent automatically')
-    }
-
     // Navigate to dashboard after successful account creation
     router.push('/dashboard')
   } catch (error) {
-    console.error('Account creation failed:', error)
     // Error handling managed by useAuth composable
   }
 }

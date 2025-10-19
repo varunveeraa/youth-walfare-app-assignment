@@ -80,14 +80,7 @@
               <h5>Performance Overview</h5>
             </div>
             <div class="col s4 right-align">
-              <button
-                @click="handleSeedTestData"
-                class="btn-small blue lighten-1 waves-effect waves-light"
-                :disabled="seeding"
-              >
-                <i class="material-icons left">data_usage</i>
-                {{ seeding ? 'Seeding...' : 'Seed Test Data' }}
-              </button>
+
               <button
                 @click="handleRefreshStats"
                 class="btn-small blue waves-effect waves-light"
@@ -203,41 +196,12 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useCounsellorStats } from '@/composables/useCounsellorStats'
-import { seedTestData } from '@/utils/seedTestData'
+
 
 const { user } = useAuth()
 const { practiceStats, loading, error, fetchCounsellorStats } = useCounsellorStats()
 
-const seeding = ref(false)
 
-// Seed test data for demonstration
-const handleSeedTestData = async () => {
-  if (!user.value?.uid) {
-    M.toast({ html: 'No user ID available', classes: 'red' })
-    return
-  }
-
-  seeding.value = true
-  try {
-    console.log('Seeding test data...')
-    const result = await seedTestData(user.value.uid)
-    console.log('Seeding result:', result)
-
-    M.toast({
-      html: `Test data seeded! ${result.appointmentsAdded} appointments, ${result.ratingsAdded} ratings`,
-      classes: 'green'
-    })
-
-    // Refresh stats after seeding
-    await fetchCounsellorStats(user.value.uid)
-
-  } catch (err) {
-    console.error('Error seeding test data:', err)
-    M.toast({ html: 'Error seeding test data: ' + err.message, classes: 'red' })
-  } finally {
-    seeding.value = false
-  }
-}
 
 // Refresh stats manually
 const handleRefreshStats = async () => {
@@ -250,10 +214,7 @@ const handleRefreshStats = async () => {
 onMounted(async () => {
   // Fetch real counsellor statistics
   if (user.value?.uid) {
-    console.log('Fetching stats for counsellor:', user.value.uid)
     await fetchCounsellorStats(user.value.uid)
-  } else {
-    console.warn('No user ID available for stats fetching')
   }
 })
 </script>

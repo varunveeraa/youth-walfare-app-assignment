@@ -12,21 +12,16 @@ const { initAuth: initializeAuthenticationMonitoring } = useAuth()
 const { announcements } = useAccessibility()
 
 const bootstrapApplicationComponents = async () => {
-  console.log('Bootstrapping application components...')
-
   // Ensure DOM is ready before initializing components
   await nextTick()
 
   // Initialize Materialize CSS framework components
   if (typeof M !== 'undefined') {
-    console.log('Initializing Materialize CSS components...')
     M.AutoInit()
   }
 
   // Establish authentication state monitoring
-  console.log('Initializing authentication monitoring...')
   initializeAuthenticationMonitoring()
-  console.log('Application bootstrap complete')
 }
 
 onMounted(() => {

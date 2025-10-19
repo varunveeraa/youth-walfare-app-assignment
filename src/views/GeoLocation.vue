@@ -200,7 +200,7 @@ export default {
       try {
         const searchTerms = this.selectedCategory.searchTerms
         const userCoords = this.userLocation || this.defaultLocation
-        const allResults = []
+        let allResults = []
 
         // Try multiple search strategies
         const searchStrategies = [

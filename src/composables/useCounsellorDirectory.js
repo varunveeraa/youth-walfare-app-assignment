@@ -93,15 +93,145 @@ export const useCounsellorDirectory = () => {
     Math.ceil(filteredCounsellors.value.length / pageSize.value)
   )
 
+  // Dummy counsellor data for demonstration
+  const getDummyCounsellors = () => {
+    return [
+      {
+        id: 'dummy-1',
+        displayName: 'Dr. Sarah Mitchell',
+        email: 'sarah.mitchell@example.com',
+        bio: 'Experienced clinical psychologist specializing in anxiety and depression. Over 10 years of helping young adults navigate life challenges.',
+        specializations: ['Anxiety Support', 'Depression Counseling', 'Stress Management'],
+        experience: 10,
+        averageRating: 4.8,
+        totalRatings: 127,
+        hourlyRate: 120,
+        sessionTypes: ['Video Call', 'Phone Call', 'In-Person'],
+        languages: ['English', 'Spanish'],
+        licenseNumber: 'PSY12345',
+        licenseState: 'NSW',
+        profileImage: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available Today',
+        responseTime: 'Within 2 hours',
+        isDummy: true,
+        createdAt: new Date('2024-01-01')
+      },
+      {
+        id: 'dummy-2',
+        displayName: 'Dr. Michael Chen',
+        email: 'michael.chen@example.com',
+        bio: 'Licensed therapist with expertise in relationship counseling and family therapy. Passionate about helping youth build healthy relationships.',
+        specializations: ['Relationship Issues', 'Family Conflicts', 'Social Anxiety'],
+        experience: 8,
+        averageRating: 4.6,
+        totalRatings: 89,
+        hourlyRate: 110,
+        sessionTypes: ['Video Call', 'In-Person'],
+        languages: ['English', 'Mandarin'],
+        licenseNumber: 'LMF67890',
+        licenseState: 'VIC',
+        profileImage: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available Tomorrow',
+        responseTime: 'Within 4 hours',
+        isDummy: true,
+        createdAt: new Date('2024-01-02')
+      },
+      {
+        id: 'dummy-3',
+        displayName: 'Dr. Emma Rodriguez',
+        email: 'emma.rodriguez@example.com',
+        bio: 'Specialist in trauma recovery and PTSD treatment. Dedicated to creating safe spaces for healing and growth.',
+        specializations: ['Trauma Recovery', 'PTSD', 'Self-Esteem Building'],
+        experience: 12,
+        averageRating: 4.9,
+        totalRatings: 156,
+        hourlyRate: 140,
+        sessionTypes: ['Video Call', 'Phone Call', 'In-Person'],
+        languages: ['English', 'Spanish', 'Portuguese'],
+        licenseNumber: 'PSY54321',
+        licenseState: 'QLD',
+        profileImage: 'https://images.unsplash.com/photo-1594824388853-d0c2b7b5e6b7?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available Today',
+        responseTime: 'Within 1 hour',
+        isDummy: true,
+        createdAt: new Date('2024-01-03')
+      },
+      {
+        id: 'dummy-4',
+        displayName: 'Dr. James Thompson',
+        email: 'james.thompson@example.com',
+        bio: 'Addiction counselor and behavioral therapist. Specializes in helping young people overcome substance abuse and develop healthy coping mechanisms.',
+        specializations: ['Addiction Support', 'Anger Management', 'Stress Management'],
+        experience: 15,
+        averageRating: 4.7,
+        totalRatings: 203,
+        hourlyRate: 130,
+        sessionTypes: ['Video Call', 'In-Person', 'Group Sessions'],
+        languages: ['English'],
+        licenseNumber: 'LAC98765',
+        licenseState: 'NSW',
+        profileImage: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available This Week',
+        responseTime: 'Within 6 hours',
+        isDummy: true,
+        createdAt: new Date('2024-01-04')
+      },
+      {
+        id: 'dummy-5',
+        displayName: 'Dr. Lisa Park',
+        email: 'lisa.park@example.com',
+        bio: 'Eating disorder specialist and nutritional psychologist. Helps young adults develop healthy relationships with food and body image.',
+        specializations: ['Eating Disorders', 'Body Image', 'Self-Esteem Building'],
+        experience: 9,
+        averageRating: 4.8,
+        totalRatings: 94,
+        hourlyRate: 125,
+        sessionTypes: ['Video Call', 'Phone Call'],
+        languages: ['English', 'Korean'],
+        licenseNumber: 'PSY11111',
+        licenseState: 'SA',
+        profileImage: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available Tomorrow',
+        responseTime: 'Within 3 hours',
+        isDummy: true,
+        createdAt: new Date('2024-01-05')
+      },
+      {
+        id: 'dummy-6',
+        displayName: 'Dr. Robert Wilson',
+        email: 'robert.wilson@example.com',
+        bio: 'Career counselor and life coach. Specializes in helping young adults navigate career transitions and academic pressures.',
+        specializations: ['Career Guidance', 'Academic Pressure', 'Life Transitions'],
+        experience: 11,
+        averageRating: 4.5,
+        totalRatings: 78,
+        hourlyRate: 115,
+        sessionTypes: ['Video Call', 'In-Person', 'Phone Call'],
+        languages: ['English', 'French'],
+        licenseNumber: 'LPC22222',
+        licenseState: 'WA',
+        profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face',
+        isActive: true,
+        availability: 'Available Next Week',
+        responseTime: 'Within 8 hours',
+        isDummy: true,
+        createdAt: new Date('2024-01-06')
+      }
+    ]
+  }
+
   // Methods
   const fetchCounsellors = async () => {
     loading.value = true
     error.value = null
 
     try {
-      console.log('Fetching counsellor directory...')
-
-      // Get all active counsellor profiles
+      // Get all active counsellor profiles from Firestore
       const counsellorsRef = collection(db, COLLECTIONS.COUNSELLOR_PROFILES)
       const q = query(
         counsellorsRef,
@@ -109,11 +239,11 @@ export const useCounsellorDirectory = () => {
         // Note: orderBy('createdAt', 'desc') temporarily removed until index builds
         // Will be restored once Firestore composite index is ready
       )
-      
-      const querySnapshot = await getDocs(q)
-      const fetchedCounsellors = []
 
-      // Also fetch ratings for each counsellor
+      const querySnapshot = await getDocs(q)
+      const realCounsellors = []
+
+      // Process real counsellors from Firestore
       for (const doc of querySnapshot.docs) {
         const counsellorData = doc.data()
         const counsellorId = doc.id
@@ -122,30 +252,39 @@ export const useCounsellorDirectory = () => {
         const averageRating = await calculateAverageRating(counsellorId)
         const totalRatings = await getTotalRatings(counsellorId)
 
-        fetchedCounsellors.push({
+        realCounsellors.push({
           id: counsellorId,
           ...counsellorData,
           averageRating: averageRating,
           totalRatings: totalRatings,
           // Add computed fields
           availability: getAvailabilityStatus(counsellorData),
-          responseTime: getResponseTime(counsellorData)
+          responseTime: getResponseTime(counsellorData),
+          isDummy: false
         })
       }
 
-      // Sort by createdAt desc (client-side until index is ready)
-      fetchedCounsellors.sort((a, b) => {
+      // Sort real counsellors by createdAt desc (client-side until index is ready)
+      realCounsellors.sort((a, b) => {
         const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0)
         const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0)
         return dateB - dateA
       })
 
-      counsellors.value = fetchedCounsellors
-      console.log(`Fetched ${fetchedCounsellors.length} counsellors`)
+      // Get dummy counsellors
+      const dummyCounsellors = getDummyCounsellors()
+
+      // Combine real counsellors first, then dummy counsellors
+      const allCounsellors = [...realCounsellors, ...dummyCounsellors]
+
+      counsellors.value = allCounsellors
 
     } catch (err) {
-      console.error('Error fetching counsellors:', err)
       error.value = err.message
+
+      // If there's an error fetching real data, still show dummy data
+      const dummyCounsellors = getDummyCounsellors()
+      counsellors.value = dummyCounsellors
     } finally {
       loading.value = false
     }
@@ -172,7 +311,6 @@ export const useCounsellorDirectory = () => {
 
       return count > 0 ? (totalRating / count) : 0
     } catch (err) {
-      console.error('Error calculating average rating:', err)
       return 0
     }
   }
@@ -184,7 +322,6 @@ export const useCounsellorDirectory = () => {
       const querySnapshot = await getDocs(q)
       return querySnapshot.size
     } catch (err) {
-      console.error('Error getting total ratings:', err)
       return 0
     }
   }
@@ -272,6 +409,70 @@ export const useCounsellorDirectory = () => {
     return colors[index]
   }
 
+  // Export functionality
+  const exportCounsellorsCSV = () => {
+    try {
+      const csvContent = generateCounsellorCSV(filteredCounsellors.value)
+      downloadCSV(csvContent, 'counsellors-directory.csv')
+      return { success: true, message: 'Counsellors exported successfully' }
+    } catch (err) {
+      return { success: false, message: err.message }
+    }
+  }
+
+  const generateCounsellorCSV = (data) => {
+    const headers = [
+      'Name',
+      'Email',
+      'Specializations',
+      'Experience (Years)',
+      'Rating',
+      'Total Reviews',
+      'Hourly Rate',
+      'Session Types',
+      'Languages',
+      'Response Time',
+      'Availability',
+      'License Number',
+      'License State'
+    ]
+
+    const rows = data.map(counsellor => [
+      counsellor.displayName || '',
+      counsellor.email || '',
+      counsellor.specializations?.join('; ') || '',
+      counsellor.experience || 0,
+      counsellor.averageRating?.toFixed(1) || '0.0',
+      counsellor.totalRatings || 0,
+      counsellor.hourlyRate ? `$${counsellor.hourlyRate}` : '',
+      counsellor.sessionTypes?.join('; ') || '',
+      counsellor.languages?.join('; ') || '',
+      counsellor.responseTime || '',
+      counsellor.availability || '',
+      counsellor.licenseNumber || '',
+      counsellor.licenseState || ''
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n')
+
+    return csvContent
+  }
+
+  const downloadCSV = (content, filename) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return {
     // State
     loading,
@@ -299,6 +500,7 @@ export const useCounsellorDirectory = () => {
     resetFilters,
     formatRating,
     getRatingStars,
-    getSpecialtyColor
+    getSpecialtyColor,
+    exportCounsellorsCSV
   }
 }
