@@ -44,7 +44,7 @@
           <div class="input-field">
             <select v-model="sortField" @change="handleSortChange" :disabled="loading">
               <option value="averageRating">Rating</option>
-              <option value="name">Name</option>
+              <option value="displayName">Name</option>
               <option value="experience">Experience</option>
               <option value="totalRatings">Reviews</option>
             </select>
@@ -558,7 +558,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAppointments } from '@/composables/useFirestore'
@@ -771,7 +771,6 @@ const submitBooking = async () => {
       router.push('/my-appointments')
     }, 2000)
   } catch (err) {
-    console.error('Error booking appointment:', err)
     M.toast({ html: 'Error booking appointment. Please try again.', classes: 'red' })
   } finally {
     submitting.value = false
@@ -870,6 +869,23 @@ const exportJSONData = () => {
   }
 }
 
+// Initialize Materialize selects
+const initializeSelects = () => {
+  if (typeof M !== 'undefined') {
+    nextTick(() => {
+      M.FormSelect.init(document.querySelectorAll('select'))
+    })
+  }
+}
+
+// Watch for loading state changes to reinitialize selects
+watch(loading, (newLoading) => {
+  if (!newLoading) {
+    // Reinitialize selects when loading completes
+    setTimeout(initializeSelects, 100)
+  }
+})
+
 // Lifecycle
 onMounted(async () => {
   // Initialize Materialize components
@@ -882,6 +898,9 @@ onMounted(async () => {
 
   // Fetch counsellors data
   await fetchCounsellors()
+
+  // Ensure selects are initialized after data loads
+  setTimeout(initializeSelects, 200)
 })
 </script>
 
