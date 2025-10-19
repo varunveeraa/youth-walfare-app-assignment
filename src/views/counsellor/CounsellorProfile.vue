@@ -110,7 +110,7 @@
                         ></textarea>
                         <label for="bio">Professional Bio</label>
                         <span class="helper-text">
-                          {{ profile.bio.length }}/500 characters
+                          {{ (profile.bio || '').length }}/500 characters
                         </span>
                         <span v-if="errors.bio" class="helper-text error-text">
                           {{ errors.bio }}
@@ -469,7 +469,7 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useCounsellorProfiles } from '@/composables/useFirestore'
 import { validateRequired, validateEmail } from '@/utils/validation'
@@ -625,17 +625,49 @@ const loadProfile = async () => {
 
     if (existingProfile) {
       profileExists.value = true
-      Object.assign(profile, existingProfile)
+      // Ensure all required fields are present with defaults
+      Object.assign(profile, {
+        displayName: existingProfile.displayName || user.value.displayName || '',
+        email: existingProfile.email || user.value.email || '',
+        bio: existingProfile.bio || '',
+        licenseNumber: existingProfile.licenseNumber || '',
+        licenseState: existingProfile.licenseState || '',
+        experience: existingProfile.experience || 0,
+        hourlyRate: existingProfile.hourlyRate || 100,
+        specializations: existingProfile.specializations || [],
+        qualifications: existingProfile.qualifications || [],
+        sessionTypes: existingProfile.sessionTypes || ['video'],
+        languages: existingProfile.languages || ['English'],
+        isActive: existingProfile.isActive !== undefined ? existingProfile.isActive : true,
+        isVerified: existingProfile.isVerified || false,
+        profilePicture: existingProfile.profilePicture || ''
+      })
     } else {
       // Initialize with default profile
       const defaultProfile = getDefaultCounsellorProfile(user.value)
-      Object.assign(profile, defaultProfile)
+      Object.assign(profile, {
+        ...defaultProfile,
+        displayName: user.value.displayName || '',
+        email: user.value.email || '',
+        hourlyRate: 100,
+        sessionTypes: ['video'],
+        languages: ['English'],
+        isActive: true
+      })
       profileExists.value = false
     }
   } catch (err) {
     // Initialize with default profile on error
     const defaultProfile = getDefaultCounsellorProfile(user.value)
-    Object.assign(profile, defaultProfile)
+    Object.assign(profile, {
+      ...defaultProfile,
+      displayName: user.value.displayName || '',
+      email: user.value.email || '',
+      hourlyRate: 100,
+      sessionTypes: ['video'],
+      languages: ['English'],
+      isActive: true
+    })
     profileExists.value = false
   }
 }
@@ -738,28 +770,64 @@ const handleImageUpload = (event) => {
   reader.readAsDataURL(file)
 }
 
-const resetForm = () => {
-  loadProfile()
+const resetForm = async () => {
+  await loadProfile()
   Object.keys(errors).forEach(key => {
     errors[key] = null
   })
+  // Reinitialize Materialize components after reset
+  initializeMaterialize()
 }
+
+// Initialize Materialize components
+const initializeMaterialize = () => {
+  if (typeof M !== 'undefined') {
+    nextTick(() => {
+      setTimeout(() => {
+        // Initialize all form elements
+        M.FormSelect.init(document.querySelectorAll('select'))
+        M.textareaAutoResize(document.getElementById('bio'))
+        M.updateTextFields()
+
+        // Trigger change events to update labels
+        document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], textarea').forEach(input => {
+          if (input.value) {
+            input.dispatchEvent(new Event('change'))
+          }
+        })
+      }, 200)
+    })
+  }
+}
+
+// Watch for loading state changes
+watch(loading, (newLoading) => {
+  if (!newLoading) {
+    // Reinitialize components when loading completes
+    initializeMaterialize()
+  }
+})
 
 // Lifecycle
 onMounted(async () => {
   await loadProfile()
 
-  // Initialize Materialize components
-  setTimeout(() => {
-    M.FormSelect.init(document.querySelectorAll('select'))
-    M.textareaAutoResize(document.getElementById('bio'))
-  }, 100)
+  // Initialize Materialize components after data loads
+  initializeMaterialize()
 })
 </script>
 <style scoped>
 .counsellor-profile {
-  min-height: 100vh;
   background-color: #f5f5f5;
+  padding-bottom: 2rem;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.counsellor-profile .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .profile-pic {
