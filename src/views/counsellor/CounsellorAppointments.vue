@@ -273,15 +273,12 @@ const stats = computed(() => {
 // Methods
 const loadAppointments = async () => {
   try {
-    console.log('Loading counsellor appointments for user:', user.value.uid)
-
     const constraints = [
       where('counsellorId', '==', user.value.uid),
       orderBy('appointmentDate', 'desc')
     ]
 
     const fetchedAppointments = await getAllAppointments(constraints)
-    console.log('Fetched appointments:', fetchedAppointments)
 
     // Convert Firebase Timestamps to JavaScript Dates
     appointments.value = fetchedAppointments.map(appointment => ({
@@ -297,7 +294,7 @@ const loadAppointments = async () => {
         new Date(appointment.updatedAt)
     }))
   } catch (err) {
-    console.error('Error loading appointments:', err)
+    error.value = err.message
   }
 }
 
@@ -419,7 +416,6 @@ const cancelAppointment = async (appointment) => {
 
       M.toast({ html: 'Appointment cancelled successfully', classes: 'orange' })
     } catch (err) {
-      console.error('Error cancelling appointment:', err)
       M.toast({ html: 'Error cancelling appointment', classes: 'red' })
     }
   }

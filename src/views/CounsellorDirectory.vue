@@ -170,11 +170,19 @@
             >
               <div class="card counsellor-card hoverable">
                 <div class="card-image">
-                  <img
-                    :src="counsellor.profileImage || '/api/placeholder/300/200'"
-                    :alt="counsellor.displayName"
-                    class="counsellor-image"
-                  >
+                  <div v-if="counsellor.profileImage" class="profile-image-container">
+                    <img
+                      :src="counsellor.profileImage"
+                      :alt="counsellor.displayName"
+                      class="counsellor-image"
+                      @error="handleImageError"
+                    >
+                  </div>
+                  <div v-else class="profile-placeholder">
+                    <div class="avatar-initials">
+                      {{ getInitials(counsellor.displayName) }}
+                    </div>
+                  </div>
                   <span class="card-title">{{ counsellor.displayName }}</span>
                   <div class="availability-badge">
                     <span class="chip green lighten-4 green-text">
@@ -217,7 +225,7 @@
                     View Profile
                   </button>
                   <button
-                    @click="bookAppointment(counsellor)"
+                    @click="bookSession(counsellor)"
                     class="btn teal"
                   >
                     Book Session
@@ -253,11 +261,19 @@
                   </span>
                 </div>
                 <div class="card-image">
-                  <img
-                    :src="counsellor.profileImage || '/api/placeholder/300/200'"
-                    :alt="counsellor.displayName"
-                    class="counsellor-image"
-                  >
+                  <div v-if="counsellor.profileImage" class="profile-image-container">
+                    <img
+                      :src="counsellor.profileImage"
+                      :alt="counsellor.displayName"
+                      class="counsellor-image"
+                      @error="handleImageError"
+                    >
+                  </div>
+                  <div v-else class="profile-placeholder">
+                    <div class="avatar-initials">
+                      {{ getInitials(counsellor.displayName) }}
+                    </div>
+                  </div>
                   <span class="card-title">{{ counsellor.displayName }}</span>
                   <div class="availability-badge">
                     <span class="chip green lighten-4 green-text">
@@ -379,11 +395,19 @@
 
           <div class="row">
             <div class="col s12 m4">
-              <img 
-                :src="selectedCounsellor.profileImage || '/api/placeholder/200/200'" 
-                :alt="selectedCounsellor.displayName"
-                class="responsive-img circle"
-              >
+              <div v-if="selectedCounsellor.profileImage" class="profile-image-container">
+                <img
+                  :src="selectedCounsellor.profileImage"
+                  :alt="selectedCounsellor.displayName"
+                  class="responsive-img circle"
+                  @error="handleImageError"
+                >
+              </div>
+              <div v-else class="profile-placeholder circle">
+                <div class="avatar-initials large">
+                  {{ getInitials(selectedCounsellor.displayName) }}
+                </div>
+              </div>
             </div>
             <div class="col s12 m8">
               <div class="rating-section">
@@ -794,6 +818,30 @@ const formatBookingDate = (date) => {
   })
 }
 
+// Helper function to get initials from name
+const getInitials = (name) => {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join('')
+}
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  // Hide the broken image and show placeholder instead
+  event.target.style.display = 'none'
+  const container = event.target.closest('.profile-image-container')
+  if (container) {
+    container.style.display = 'none'
+    const placeholder = container.nextElementSibling
+    if (placeholder && placeholder.classList.contains('profile-placeholder')) {
+      placeholder.style.display = 'flex'
+    }
+  }
+}
+
 // Export methods
 const exportCSV = () => {
   try {
@@ -991,6 +1039,41 @@ onMounted(async () => {
 .counsellor-image {
   height: 200px;
   object-fit: cover;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+
+.profile-placeholder {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #26a69a, #4db6ac);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.profile-placeholder.circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.avatar-initials {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+.avatar-initials.large {
+  font-size: 4rem;
 }
 
 .availability-badge {

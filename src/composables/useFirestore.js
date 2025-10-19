@@ -170,8 +170,13 @@ export const useCounsellorProfiles = () => {
       loading.value = true
       error.value = null
 
-      const profile = await getDocument(COLLECTIONS.COUNSELLOR_PROFILES, userId)
-      return profile
+      // Query by userId field instead of document ID
+      const profiles = await getDocuments(counsellorProfilesCollection, [
+        where('userId', '==', userId)
+      ])
+
+      // Return the first (and should be only) profile found
+      return profiles.length > 0 ? profiles[0] : null
     } catch (err) {
       error.value = err.message
       throw err
@@ -185,7 +190,18 @@ export const useCounsellorProfiles = () => {
       loading.value = true
       error.value = null
 
-      await updateDocument(COLLECTIONS.COUNSELLOR_PROFILES, userId, {
+      // First find the profile document by userId
+      const profiles = await getDocuments(counsellorProfilesCollection, [
+        where('userId', '==', userId)
+      ])
+
+      if (profiles.length === 0) {
+        throw new Error('Profile not found')
+      }
+
+      const profileId = profiles[0].id
+
+      await updateDocument(COLLECTIONS.COUNSELLOR_PROFILES, profileId, {
         ...profileData,
         updatedAt: new Date()
       })
@@ -224,7 +240,18 @@ export const useCounsellorProfiles = () => {
       loading.value = true
       error.value = null
 
-      await deleteDocument(COLLECTIONS.COUNSELLOR_PROFILES, userId)
+      // First find the profile document by userId
+      const profiles = await getDocuments(counsellorProfilesCollection, [
+        where('userId', '==', userId)
+      ])
+
+      if (profiles.length === 0) {
+        throw new Error('Profile not found')
+      }
+
+      const profileId = profiles[0].id
+
+      await deleteDocument(COLLECTIONS.COUNSELLOR_PROFILES, profileId)
       return true
     } catch (err) {
       error.value = err.message
