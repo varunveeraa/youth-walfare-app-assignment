@@ -199,6 +199,26 @@ export const useCounsellorProfiles = () => {
     }
   }
 
+  const createProfile = async (profileData) => {
+    try {
+      loading.value = true
+      error.value = null
+
+      const profileId = await createDocument(counsellorProfilesCollection, {
+        ...profileData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+
+      return profileId
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   const deleteProfile = async (userId) => {
     try {
       loading.value = true
@@ -233,6 +253,7 @@ export const useCounsellorProfiles = () => {
     loading,
     error,
     getProfile,
+    createProfile,
     getAllProfiles,
     updateProfile,
     deleteProfile
