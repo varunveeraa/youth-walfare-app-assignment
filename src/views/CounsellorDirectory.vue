@@ -768,6 +768,7 @@ const submitBooking = async () => {
       userId: user.value.uid,
       counsellorId: selectedCounsellor.value.id,
       counsellorName: selectedCounsellor.value.displayName,
+      counsellorProfilePicture: selectedCounsellor.value.profileImage || '',
       userName: user.value.displayName || user.value.email,
       userEmail: user.value.email,
       userProfilePicture: user.value.profilePicture || '',

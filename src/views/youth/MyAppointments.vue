@@ -97,11 +97,19 @@
             <div class="card-content">
               <div class="row">
                 <div class="col s12 m3 center-align">
-                  <img
-                    :src="appointment.counsellorProfilePicture || '/api/placeholder/100/100'"
-                    :alt="appointment.counsellorName"
-                    class="circle responsive-img counsellor-avatar"
-                  >
+                  <div v-if="appointment.counsellorProfilePicture" class="profile-image-container">
+                    <img
+                      :src="appointment.counsellorProfilePicture"
+                      :alt="appointment.counsellorName"
+                      class="circle responsive-img counsellor-avatar"
+                      @error="handleImageError"
+                    >
+                  </div>
+                  <div v-else class="profile-placeholder circle counsellor-avatar">
+                    <div class="avatar-initials">
+                      {{ getInitials(appointment.counsellorName) }}
+                    </div>
+                  </div>
                   <h6>{{ appointment.counsellorName }}</h6>
                 </div>
 
@@ -255,7 +263,7 @@ const loadAppointments = async () => {
         new Date(appointment.updatedAt)
     }))
   } catch (err) {
-    console.error('Error loading appointments:', err)
+    error.value = err.message
   }
 }
 
@@ -280,8 +288,7 @@ const formatDate = (date) => {
       month: 'long',
       day: 'numeric'
     })
-  } catch (error) {
-    console.error('Error formatting date:', error)
+  } catch (err) {
     return 'Invalid Date'
   }
 }
@@ -364,7 +371,6 @@ const cancelAppointment = async (appointment) => {
 
       M.toast({ html: 'Appointment cancelled successfully', classes: 'orange' })
     } catch (err) {
-      console.error('Error cancelling appointment:', err)
       M.toast({ html: 'Error cancelling appointment', classes: 'red' })
     }
   }
@@ -378,6 +384,30 @@ const bookAgain = (appointment) => {
   })
 }
 
+// Helper function to get initials from name
+const getInitials = (name) => {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join('')
+}
+
+// Handle image loading errors
+const handleImageError = (event) => {
+  // Hide the broken image and show placeholder instead
+  event.target.style.display = 'none'
+  const container = event.target.closest('.profile-image-container')
+  if (container) {
+    container.style.display = 'none'
+    const placeholder = container.nextElementSibling
+    if (placeholder && placeholder.classList.contains('profile-placeholder')) {
+      placeholder.style.display = 'flex'
+    }
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   // Initialize Materialize tabs
@@ -385,55 +415,9 @@ onMounted(async () => {
 
   // Load appointments
   await loadAppointments()
-
-  // Add mock data if no appointments exist
-  if (appointments.value.length === 0) {
-    appointments.value = getMockAppointments()
-  }
 })
 
-// Mock data for demonstration
-const getMockAppointments = () => [
-  {
-    id: '1',
-    counsellorId: 'counsellor1',
-    counsellorName: 'Dr. Sarah Johnson',
-    counsellorProfilePicture: 'https://via.placeholder.com/100x100?text=Dr.+Sarah',
-    userId: user.value.uid,
-    appointmentDate: new Date('2024-01-20T14:00:00'),
-    duration: 60,
-    sessionType: 'video',
-    status: 'scheduled',
-    cost: 120,
-    userNotes: 'Looking forward to discussing anxiety management strategies'
-  },
-  {
-    id: '2',
-    counsellorId: 'counsellor2',
-    counsellorName: 'Dr. Michael Chen',
-    counsellorProfilePicture: 'https://via.placeholder.com/100x100?text=Dr.+Michael',
-    userId: user.value.uid,
-    appointmentDate: new Date('2024-01-15T16:00:00'),
-    duration: 45,
-    sessionType: 'video',
-    status: 'completed',
-    cost: 75,
-    userNotes: 'Follow-up session'
-  },
-  {
-    id: '3',
-    counsellorId: 'counsellor3',
-    counsellorName: 'Dr. Emily Rodriguez',
-    counsellorProfilePicture: 'https://via.placeholder.com/100x100?text=Dr.+Emily',
-    userId: user.value.uid,
-    appointmentDate: new Date('2024-01-10T10:00:00'),
-    duration: 60,
-    sessionType: 'audio',
-    status: 'cancelled',
-    cost: 140,
-    userNotes: 'Initial consultation'
-  }
-]
+
 </script>
 
 <style scoped>
@@ -462,6 +446,35 @@ const getMockAppointments = () => [
 .counsellor-avatar {
   max-width: 100px;
   margin-bottom: 0.5rem;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.profile-placeholder {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, #26a69a, #4db6ac);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+}
+
+.profile-placeholder.circle {
+  border-radius: 50%;
+}
+
+.avatar-initials {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  user-select: none;
 }
 
 .appointment-details p {
