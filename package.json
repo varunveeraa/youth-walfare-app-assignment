@@ -8,7 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node fix-paths.js",
+    "build:prod": "vite build && node fix-paths.js",
     "preview": "vite preview"
   },
   "dependencies": {
