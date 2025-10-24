@@ -1,0 +1,1 @@
+import{a as t,b as e,o as a}from"./vendor-BmZR9K5F.js";const s={class:"content-management"},l={__name:"ContentManagement",setup(o){return(c,n)=>(a(),t("div",s,[...n[0]||(n[0]=[e("div",{class:"container"},[e("div",{class:"row"},[e("div",{class:"col s12"},[e("h4",null,"Content Management"),e("p",null,"Manage resources and platform content.")])])],-1)])]))}};export{l as default};

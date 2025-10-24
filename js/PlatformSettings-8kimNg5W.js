@@ -1,0 +1,1 @@
+import{a as e,b as s,o as a}from"./vendor-BmZR9K5F.js";const o={class:"platform-settings"},c={__name:"PlatformSettings",setup(n){return(r,t)=>(a(),e("div",o,[...t[0]||(t[0]=[s("div",{class:"container"},[s("div",{class:"row"},[s("div",{class:"col s12"},[s("h4",null,"Platform Settings"),s("p",null,"Configure platform settings and preferences.")])])],-1)])]))}};export{c as default};
