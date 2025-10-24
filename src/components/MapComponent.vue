@@ -20,6 +20,8 @@
       </div>
     </div>
 
+    <input v-model="text">
+
     <!-- Route Controls -->
     <div class="route-controls" v-if="showRouteControls">
       <div class="card">
