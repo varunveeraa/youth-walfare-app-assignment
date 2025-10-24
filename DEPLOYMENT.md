@@ -1,8 +1,40 @@
 # Deployment Guide for MindBridge Youth Wellness Platform
 
+## 🚀 Multi-Platform Deployment Support
+
+This project supports deployment to multiple platforms with optimized configurations:
+- **GitHub Pages** (with CI/CD)
+- **Cloudflare Pages**
+- **Netlify**
+- **Firebase Hosting**
+
+## 🚀 GitHub Pages Deployment with CI/CD
+
+### Prerequisites for GitHub Pages
+- GitHub account
+- Repository with GitHub Actions enabled
+
+### Automatic Deployment Setup
+
+1. **Push to Repository**: The GitHub Actions workflow is already configured
+2. **Automatic Build**: Every push to `main` branch triggers:
+   - Dependency installation
+   - Production build with optimizations
+   - Deployment to `gh-pages` branch
+3. **Access**: Your app will be available at `https://username.github.io/repository-name/`
+
+### Manual GitHub Pages Setup
+
+If you need to set up GitHub Pages manually:
+
+1. Go to repository Settings > Pages
+2. Select source: "Deploy from a branch"
+3. Choose branch: `gh-pages`
+4. Click Save
+
 ## 🚀 Cloudflare Pages Deployment
 
-### Prerequisites
+### Prerequisites for Cloudflare
 - Cloudflare account
 - GitHub repository connected to Cloudflare Pages
 

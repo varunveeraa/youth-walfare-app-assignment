@@ -10,7 +10,9 @@
     "dev": "vite",
     "build": "vite build && node fix-paths.js",
     "build:prod": "vite build && node fix-paths.js",
-    "preview": "vite preview"
+    "build:github": "vite build --mode github",
+    "preview": "vite preview",
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-geocoder": "^5.1.2",

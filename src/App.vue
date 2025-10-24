@@ -61,6 +61,9 @@ onMounted(() => {
 /* Google Material Icons font */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
+/* Custom CSS-based icons for performance */
+@import '@/assets/css/icons.css';
+
 /* Base application styles */
 html, body {
   margin: 0;
